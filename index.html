@@ -6,6 +6,7 @@
 <title>Flight Weather Dashboard</title>
 
 <style>
+
 body{
     margin:20px;
     font-family:sans-serif;
@@ -32,7 +33,24 @@ h1{
     height:100%;
     object-fit:contain;
 }
+.airport-input{
+    margin-bottom:20px;
+}
 
+.airport-input input{
+    width:80px;
+    margin-right:10px;
+    text-transform:uppercase;
+}
+
+.airport-input button{
+    margin-left:10px;
+}
+
+#airport-display{
+    margin-bottom:20px;
+    font-weight:bold;
+}
 </style>
 
 </head>
@@ -40,7 +58,26 @@ h1{
 <body>
 
 <h1>Flight Weather Dashboard</h1>
+<div class="airport-input">
 
+    <label>Departure</label>
+    <input type="text" id="departure" value="RJOO">
+
+    <label>Destination</label>
+    <input type="text" id="destination" value="RJTT">
+
+    <label>Alternate</label>
+    <input type="text" id="alternate" value="RJBB">
+
+    <button onclick="updateAirports()">
+        更新
+    </button>
+
+</div>
+
+<div id="airport-display">
+    現在設定: RJOO → RJTT (ALT: RJBB)
+</div>
 <div class="grid">
 
     <div class="panel">
@@ -92,6 +129,25 @@ h1{
     </div>
 
 </div>
+<script>
+
+function updateAirports(){
+
+    const dep =
+        document.getElementById("departure").value.toUpperCase();
+
+    const dest =
+        document.getElementById("destination").value.toUpperCase();
+
+    const alt =
+        document.getElementById("alternate").value.toUpperCase();
+
+    document.getElementById("airport-display").innerText =
+        `現在設定: ${dep} → ${dest} (ALT: ${alt})`;
+
+}
+
+</script>
 
 </body>
 </html>
