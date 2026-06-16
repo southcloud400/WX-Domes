@@ -266,31 +266,7 @@ body{
     </div>
     
     <div class="panel">
-        <div class="satellite-wrapper">
-            <div
-                class="satellite-grid satellite-grid-3x2"
-                onclick="openSatellitePage()">
-                <img class="satellite-tile" data-x="5" data-y="2">
-                <img class="satellite-tile" data-x="6" data-y="2">
-                <img class="satellite-tile" data-x="7" data-y="2">
-                <img class="satellite-tile" data-x="5" data-y="3">
-                <img class="satellite-tile" data-x="6" data-y="3">
-                <img class="satellite-tile" data-x="7" data-y="3">
-            </div>
-            <div class="coastline-grid">
-                <img src="https://www.jma.go.jp/tile/jma/sat/4/10/4.png">
-                <img src="https://www.jma.go.jp/tile/jma/sat/4/13/4.png">
-                <img src="https://www.jma.go.jp/tile/jma/sat/4/14/4.png">
-
-                <img src="https://www.jma.go.jp/tile/jma/sat/4/12/5.png">
-                <img src="https://www.jma.go.jp/tile/jma/sat/4/13/5.png">
-                <img src="https://www.jma.go.jp/tile/jma/sat/4/14/5.png">
-            </div>
-        </div>
-    </div>
-    
-    <div class="panel">
-        <div class="radar-wrapper">
+         <div class="radar-wrapper">
             <div class="radar-base-grid radar-grid-3x2"></div>
             
             <div
@@ -304,19 +280,24 @@ body{
                 <img class="radar-tile" data-x="14" data-y="6">
                 <img class="radar-tile" data-x="15" data-y="6">
             </div>
-        </div>
+        </div>   
     </div>
+        <img
+            src="https://www.imocwx.com/guid/gd300jp.png?2006"
+            class="weather-image"
+            onclick="enlargeImage(this)">
 
     <div class="panel">
-    <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank">
-        国内悪天解析を開く
-    </a>
+        <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank">
+            国内悪天解析を開く
+        </a>
     </div>
     
     <div class="panel">
-    <img
-        src="https://www.data.jma.go.jp/airinfo/data/pict/fbjp/fbjp.png"
-        class="weather-image">
+        <img
+            src="https://www.data.jma.go.jp/airinfo/data/pict/fbjp/fbjp.png"
+            class="weather-image"
+            onclick="enlargeImage(this)">
     </div>
 
     <div class="panel">
@@ -453,6 +434,13 @@ function imageExists(url){
     });
 }
 
+function openRadarPage(){
+    window.open(
+        "https://www.jma.go.jp/bosai/nowc/",
+        "_blank"
+    );
+}
+
 async function loadMaijiPlane(){
 
     const baseUrl =
@@ -491,14 +479,12 @@ async function loadMaijiPlane(){
                 document.getElementById("maiji-plane-image").src =
                     url;
 
-                console.log("30分大気解析 平面:", url);
 
                 return;
             }
         }
     }
 
-    console.log("30分大気解析 平面が見つかりませんでした");
 }
 
 async function loadMaijiSection(){
@@ -539,14 +525,12 @@ async function loadMaijiSection(){
                 document.getElementById("maiji-section-image").src =
                     url;
 
-                console.log("30分大気解析 平面:", url);
 
                 return;
             }
         }
     }
 
-    console.log("30分大気解析 平面が見つかりませんでした");
 }
 
 async function loadSatelliteTime(){
@@ -565,7 +549,7 @@ async function loadSatelliteTime(){
     const testUrl =
         `https://www.jma.go.jp/bosai/himawari/data/satimg/${latestTime}/fd/${latestTime}/SND/ETC/3/6/2.jpg`;
 
-    console.log(testUrl);
+
 
 document.querySelectorAll(".satellite-tile").forEach((tile) => {
     const x = tile.dataset.x;
@@ -590,7 +574,6 @@ async function loadRadarTime(){
     const latestTime =
         data[0].basetime;
 
-    console.log(latestTime);
 
     document.querySelectorAll(".radar-tile").forEach((tile) => {
 
