@@ -8,12 +8,26 @@
 <style>
 
 body{
-    margin:20px;
+    margin:0px;
     font-family:sans-serif;
+    background:#0d3b66;
+    color:white;
 }
 
-h1{
-    text-align:center;
+.header{
+    background:white;
+    border-top:4px solid #0d3b66;
+    border-bottom:12px solid #0d3b66;
+    padding:8px 20px;
+    margin-bottom:20px;
+}
+
+.header h2{
+    margin:0;
+    text-align:left;
+    color:#0d3b66;
+    font-style:italic;
+    font-weight:bold;
 }
 
 .grid{
@@ -23,16 +37,20 @@ h1{
 }
 
 .panel{
-    border:1px solid black;
-    min-height:350px;
+
+    border:1px solid #888;
     padding:5px;
+    background:white;
+    color:black;
 }
 
 .weather-image{
     width:100%;
-    height:100%;
-    object-fit:contain;
+    height:auto;
+    display:block;
+    cursor:pointer;
 }
+
 .airport-input{
     margin-bottom:20px;
 }
@@ -51,13 +69,42 @@ h1{
     margin-bottom:20px;
     font-weight:bold;
 }
+
+.modal {
+    display:none;
+    position:fixed;
+    z-index:9999;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.9);
+}
+
+.modal img {
+    width:95%;
+    height:95%;
+    object-fit:contain;
+    display:block;
+    margin:auto;
+}
+
+.modal.show {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
 </style>
 
 </head>
 
 <body>
 
-<h1>Flight Weather Dashboard</h1>
+<div class="header">
+    <h2>WX Domes</h2>
+</div>
+
 <div class="airport-input">
 
     <label>Departure</label>
@@ -72,6 +119,10 @@ h1{
     <button onclick="updateAirports()">
         更新
     </button>
+    
+    <button onclick="openMetar()">
+    METAR/TAF
+    </button>
 
 </div>
 
@@ -81,22 +132,27 @@ h1{
 <div class="grid">
 
     <div class="panel">
-    <h3>ASAS</h3>
     <img
-        src="https://www.jma.go.jp/bosai/weather_map/data/png/20260604023931_0_Z__C_010000_20260604000000_MET_CHT_JCIasas_JCP600x512_JRcolor_Tjmahp_image.png"
-        class="weather-image">
+        id="asas-image"
+        src=""
+        class="weather-image"
+        onclick="enlargeImage(this)">
     </div>
+    
     <div class="panel">
-    <h3>FSAS</h3>
     <img
-        src="https://www.jma.go.jp/bosai/weather_map/data/png/20260604052930_0_Z__C_010000_20260604000000_MET_CHT_JCIfsas24_JCP600x512_JRcolor_Tjmahp_image.png"
-        class="weather-image">
+        id="fsas-image"
+        src=""
+        class="weather-image"
+        onclick="enlargeImage(this)">
     </div>
+    
     <div class="panel">
     <a href="https://www.jma.go.jp/bosai/map.html#5/34.5/137/&elem=color&contents=himawari" target="_blank">
         雲画像を開く
     </a>
     </div>
+    
     <div class="panel">
     <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank">
         エコー画像を開く
@@ -108,27 +164,47 @@ h1{
         国内悪天解析を開く
     </a>
     </div>
+    
     <div class="panel">
-    <h3>FBJP</h3>
     <img
         src="https://www.data.jma.go.jp/airinfo/data/pict/fbjp/fbjp.png"
         class="weather-image">
     </div>
 
     <div class="panel">
-    <h3>30分大気解析（平面）</h3>
+    <h3>30分大気解析（断面）</h3>
     <img
-        src="https://www.data.jma.go.jp/airinfo/data/pict/maiji/WANLC199_RJTD_20260604060000.PNG"
-           class="weather-image">
+    id="maiji-section-image"
+    src=""
+    class="weather-image"
+    onclick="enlargeImage(this)">
     </div>
+    
     <div class="panel">
-    <h3>30分大気解析(断面)</h3>
+    <h3>30分大気解析(平面)</h3>
     <img
-        src="https://www.data.jma.go.jp/airinfo/data/pict/maiji/WANLF141_RJTD_20260604060000.PNG"
-           class="weather-image">
+    id="maiji-plane-image"
+    src=""
+    class="weather-image"
+    onclick="enlargeImage(this)">
     </div>
 
 </div>
+
+<h2>METAR / TAF</h2>
+
+<div id="metar-frame-container">
+
+<iframe
+    id="metar-frame"
+    width="100%"
+    height="600"
+    src=""
+>
+</iframe>
+
+</div>
+
 <script>
 
 function updateAirports(){
@@ -147,7 +223,193 @@ function updateAirports(){
 
 }
 
+function openMetar(){
+
+    const dep =
+        document.getElementById("departure").value.toUpperCase();
+
+    const dest =
+        document.getElementById("destination").value.toUpperCase();
+
+    const alt =
+        document.getElementById("alternate").value.toUpperCase();
+
+    const url =
+        `https://aviationweather.gov/data/metar/?ids=${dep},${dest},${alt}&hours=3&taf=1`;
+
+    document.getElementById("metar-frame").src = url;
+
+}
+
+function enlargeImage(img){
+
+    document.getElementById("modalImage").src = img.src;
+
+    document
+        .getElementById("imageModal")
+        .classList.add("show");
+}
+
+function closeModal(){
+
+    document
+        .getElementById("imageModal")
+        .classList.remove("show");
+}
+
+async function loadWeatherMaps(){
+
+    const response =
+        await fetch(
+            "https://www.jma.go.jp/bosai/weather_map/data/list.json"
+        );
+
+    const data =
+        await response.json();
+
+    const asasFile =
+    data.asia.now[data.asia.now.length - 1];
+
+    const fsasFile =
+        data.asia.ft24[0];
+
+    const baseUrl =
+        "https://www.jma.go.jp/bosai/weather_map/data/png/";
+
+    document.getElementById("asas-image").src =
+        baseUrl + asasFile;
+
+    document.getElementById("fsas-image").src =
+        baseUrl + fsasFile;
+
+}
+
+function formatTimestamp(date){
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(date.getUTCDate()).padStart(2, "0");
+    const h = String(date.getUTCHours()).padStart(2, "0");
+    const min = String(date.getUTCMinutes()).padStart(2, "0");
+
+    return `${y}${m}${d}${h}${min}00`;
+}
+
+function imageExists(url){
+    return new Promise((resolve) => {
+        const img = new Image();
+
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+
+        img.src = url;
+    });
+}
+
+async function loadMaijiPlane(){
+
+    const baseUrl =
+        "https://www.data.jma.go.jp/airinfo/data/pict/maiji/";
+
+    const codes = [
+        "WANLC101",
+    ];
+
+    const now = new Date();
+
+    now.setUTCMinutes(
+        Math.floor(now.getUTCMinutes() / 30) * 30,
+        0,
+        0
+    );
+
+    for(let i = 0; i < 96; i++){
+
+        const targetTime =
+            new Date(now.getTime() - i * 30 * 60 * 1000);
+
+        const timestamp =
+            formatTimestamp(targetTime);
+
+        for(const code of codes){
+
+            const url =
+                `${baseUrl}${code}_RJTD_${timestamp}.PNG`;
+
+            const exists =
+                await imageExists(url);
+
+            if(exists){
+
+                document.getElementById("maiji-plane-image").src =
+                    url;
+
+                console.log("30分大気解析 平面:", url);
+
+                return;
+            }
+        }
+    }
+
+    console.log("30分大気解析 平面が見つかりませんでした");
+}
+
+async function loadMaijiSection(){
+
+    const baseUrl =
+        "https://www.data.jma.go.jp/airinfo/data/pict/maiji/";
+
+    const codes = [
+        "WANLF145",
+    ];
+
+    const now = new Date();
+
+    now.setUTCMinutes(
+        Math.floor(now.getUTCMinutes() / 30) * 30,
+        0,
+        0
+    );
+
+    for(let i = 0; i < 96; i++){
+
+        const targetTime =
+            new Date(now.getTime() - i * 30 * 60 * 1000);
+
+        const timestamp =
+            formatTimestamp(targetTime);
+
+        for(const code of codes){
+
+            const url =
+                `${baseUrl}${code}_RJTD_${timestamp}.PNG`;
+
+            const exists =
+                await imageExists(url);
+
+            if(exists){
+
+                document.getElementById("maiji-section-image").src =
+                    url;
+
+                console.log("30分大気解析 平面:", url);
+
+                return;
+            }
+        }
+    }
+
+    console.log("30分大気解析 平面が見つかりませんでした");
+}
+
+loadWeatherMaps();
+loadMaijiPlane();
+loadMaijiSection();
+
 </script>
+
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <img id="modalImage">
+</div>
 
 </body>
 </html>
