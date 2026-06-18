@@ -51,6 +51,25 @@ body{
     cursor:pointer;
 }
 
+.metar-panel{
+
+    background:#0f1c2e;
+    border:1px solid #3d5a80;
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:12px;
+
+}
+
+#metar-text{
+
+    white-space:pre-wrap;
+    font-family:monospace;
+    font-size:14px;
+    color:white;
+
+}
+
 .asas-panel{
     position:relative;
     overflow:hidden;
@@ -296,6 +315,16 @@ body{
 
 </div>
 
+<div class="metar-panel">
+
+    <h3>METAR / TAF</h3>
+
+    <pre id="metar-text">
+Loading...
+    </pre>
+
+</div>
+
 <div id="airport-display">
     現在設定: RJOO → RJTT (ALT: RJBB)
 </div>
@@ -494,6 +523,8 @@ function updateAirports(){
     document.getElementById("airport-display").innerText =
         `現在設定: ${dep} → ${dest} (ALT: ${alt})`;
 
+    loadMetarText();
+
 }
 
 function openMetar(){
@@ -512,6 +543,33 @@ function openMetar(){
 
     document.getElementById("metar-frame").src = url;
 
+}
+
+async function loadMetarText(){
+
+    const dep =
+        document.getElementById("departure").value.toUpperCase();
+
+    const dest =
+        document.getElementById("destination").value.toUpperCase();
+
+    const alt =
+        document.getElementById("alternate").value.toUpperCase();
+
+    const ids =
+        `${dep},${dest},${alt}`;
+
+    const url =
+        `https://aviationweather.gov/api/data/metar?ids=${ids}&format=raw&taf=true&hours=3`;
+
+    const response =
+        await fetch(url);
+
+    const text =
+        await response.text();
+
+    document.getElementById("metar-text").innerText =
+        text;
 }
 
 function enlargeImage(img){
@@ -993,6 +1051,8 @@ loadMaijiSection();
 loadSatelliteTime();
 loadRadarTime();
 loadMaijiTimelineTest();
+loadMetarText();
+
 
 document.getElementById("lightning-area-select")
     .addEventListener("change", () => {
