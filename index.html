@@ -189,7 +189,7 @@ body{
     cursor:pointer;
 }
 
-.radar-grid-3x2{
+.radar-grid-3x3{
     grid-template-columns:1fr 1fr 1fr;
 }
 
@@ -224,7 +224,8 @@ body{
 
 .radar-grid,
 .radar-base-grid{
-    transform:translateX(10%);
+    transform:translate(12%, 10%);
+    scale:1.8;
 }
 
 .modal-content{
@@ -301,7 +302,7 @@ body{
 <div class="grid">
 
     <div class="panel asas-panel">
-
+        <div id="satellite-time" style="font-weight:bold; margin-bottom:6px;"></div>
         <div class="asas-overlay-window">
 
             <img
@@ -332,11 +333,12 @@ body{
     </div>
     
     <div class="panel">
+        <div id="radar-time" style="font-weight:bold; margin-bottom:6px;"></div>
          <div class="radar-wrapper">
-            <div class="radar-base-grid radar-grid-3x2"></div>
+            <div class="radar-base-grid radar-grid-3x3"></div>
             
             <div
-                class="radar-grid radar-grid-3x2"
+                class="radar-grid radar-grid-3x3"
                 onclick="openRadarPage()">
                 <img class="radar-tile" data-x="13" data-y="5">
                 <img class="radar-tile" data-x="14" data-y="5">
@@ -345,19 +347,41 @@ body{
                 <img class="radar-tile" data-x="13" data-y="6">
                 <img class="radar-tile" data-x="14" data-y="6">
                 <img class="radar-tile" data-x="15" data-y="6">
-            </div>
-        </div>   
-    </div>
-        <img
-            src="https://www.imocwx.com/guid/gd300jp.png?2006"
-            class="weather-image"
-            onclick="enlargeImage(this)">
 
-    <div class="panel">
-        <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank">
-            国内悪天解析を開く
-        </a>
+                <img class="radar-tile" data-x="13" data-y="7">
+                <img class="radar-tile" data-x="14" data-y="7">
+                <img class="radar-tile" data-x="15" data-y="7">
+            </div>
+        </div> 
     </div>
+
+<div class="panel">
+    <div style="margin-bottom:8px;">
+        <label for="lightning-area-select">発雷確率：</label>
+
+        <select id="lightning-area-select">
+            <option value="jp">日本</option>
+            <option value="sjp">南日本</option>
+        </select>
+    </div>
+
+    <div id="lightning-time" style="font-weight:bold; margin-bottom:6px;">
+        発雷確率
+    </div>
+
+    <img
+        id="lightning-image"
+        src=""
+        class="weather-image"
+        data-timeline="lightning"
+        onclick="enlargeImage(this)">
+</div>
+
+<div class="panel">
+    <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank">
+        国内悪天解析を開く
+    </a>
+</div>
     
     <div class="panel">
         <img
@@ -451,6 +475,7 @@ body{
 
 <script>
 
+let lightningTimeline = [];
 let maijiPlaneTimeline = [];
 let maijiFlatTimeline = [];
 let currentMaijiTimeline = [];
@@ -499,36 +524,43 @@ function enlargeImage(img){
         document.getElementById("maiji-modal-control");
 
     if(
-    img.dataset.timeline === "maiji-plane" ||
-    img.dataset.timeline === "maiji-flat"
+        img.dataset.timeline === "maiji-plane" ||
+        img.dataset.timeline === "maiji-flat" ||
+        img.dataset.timeline === "lightning"
     ){
 
-    const timeline =
-        img.dataset.timeline === "maiji-flat"
-            ? maijiFlatTimeline
-            : maijiPlaneTimeline;
+        let timeline;
 
-    currentMaijiTimeline = timeline;
+        if(img.dataset.timeline === "maiji-flat"){
+            timeline = maijiFlatTimeline;
+        }else if(img.dataset.timeline === "lightning"){
+            timeline = lightningTimeline;
+        }else{
+            timeline = maijiPlaneTimeline;
+        }{
 
-    control.style.display = "block";
+            currentMaijiTimeline = timeline;
 
-    const slider =
-        document.getElementById("maiji-modal-slider");
+            control.style.display = "block";
 
-    slider.max =
-        timeline.length - 1;
+            const slider =
+                document.getElementById("maiji-modal-slider");
 
-    slider.value =
-        timeline.length - 1;
+            slider.max =
+                timeline.length - 1;
 
-    document.getElementById("maiji-modal-time").innerText =
-        formatDisplayTime(
+            slider.value =
+                timeline.length - 1;
+
+            document.getElementById("maiji-modal-time").innerText =
             timeline[0].timestamp
-        );
+                ? formatDisplayTime(timeline[0].timestamp)
+                : timeline[0].label;
+                }
 
     }else{
 
-    control.style.display = "none";
+        control.style.display = "none";
     }
 
     document
@@ -592,6 +624,56 @@ function formatDisplayTime(timestamp){
     );
 }
 
+function formatJmaTileTime(basetime){
+
+    return (
+        basetime.slice(0,4) + "/" +
+        basetime.slice(4,6) + "/" +
+        basetime.slice(6,8) + " " +
+        basetime.slice(8,10) + ":" +
+        basetime.slice(10,12) +
+        " UTC"
+    );
+}
+
+async function loadLightningImage(){
+
+    const area =
+        document.getElementById("lightning-area-select").value;
+
+    const timeline = [];
+
+    for(let i = 0; i <= 9; i++){
+
+        const fileNumber =
+            String(i).padStart(2, "0");
+
+        const url =
+            `https://www.imocwx.com/guid/gd3${fileNumber}${area}.png?${Date.now()}`;
+
+        const exists =
+            await imageExists(url);
+
+        if(exists){
+            timeline.push({
+                index: timeline.length,
+                label: `${i}時間後`,
+                url: url
+            });
+        }
+    }
+
+    lightningTimeline = timeline;
+
+    if(timeline.length > 0){
+        document.getElementById("lightning-image").src =
+            timeline[0].url;
+
+        document.getElementById("lightning-time").innerText =
+            `発雷確率 ${timeline[0].label}`;
+    }
+}
+
 async function findLatestMaijiImage(code){
 
     const baseUrl =
@@ -639,7 +721,7 @@ async function loadMaijiTimelineTest(){
         document.getElementById("maiji-section-select").value;
 
     const imageCode =
-        `WANLC1${selectedSection}`;
+    `WANLC1${String(Number(selectedSection) + 1).padStart(2, "0")}`;
 
     const latest =
         await findLatestMaijiImage(imageCode);
@@ -673,9 +755,10 @@ async function loadMaijiTimelineTest(){
         }
     }
 
-    console.log("存在確認済みタイムライン", timeline);
-
     maijiPlaneTimeline = timeline;
+
+    console.log("断面タイムライン件数", maijiPlaneTimeline.length);
+    console.log("断面タイムライン中身", maijiPlaneTimeline);
 
     if(timeline.length > 0){
     document.getElementById("maiji-plane-image").src = timeline[0].url;
@@ -821,6 +904,9 @@ async function loadSatelliteTime(){
     const latestTime =
         data[data.length - 1].basetime;
 
+    document.getElementById("satellite-time").innerText =
+    formatJmaTileTime(latestTime);
+
     const testUrl =
         `https://www.jma.go.jp/bosai/himawari/data/satimg/${latestTime}/fd/${latestTime}/SND/ETC/3/6/2.jpg`;
 
@@ -849,6 +935,9 @@ async function loadRadarTime(){
     const latestTime =
         data[0].basetime;
 
+    document.getElementById("radar-time").innerText =
+    formatJmaTileTime(latestTime);
+
 
     document.querySelectorAll(".radar-tile").forEach((tile) => {
 
@@ -871,7 +960,10 @@ const baseTiles = [
     [15, 5],
     [13, 6],
     [14, 6],
-    [15, 6]
+    [15, 6],
+    [13, 7],
+    [14, 7],
+    [15, 7]
 ];
 
 baseTiles.forEach(([x, y]) => {
@@ -894,12 +986,19 @@ function openSatellitePage(){
 
 }
 
+loadLightningImage();
 loadWeatherMaps();
 loadMaijiPlane();
 loadMaijiSection();
 loadSatelliteTime();
 loadRadarTime();
 loadMaijiTimelineTest();
+
+document.getElementById("lightning-area-select")
+    .addEventListener("change", () => {
+        loadLightningImage();
+    });
+
 
 document.getElementById("maiji-height-select")
     .addEventListener("change", () => {
@@ -946,7 +1045,9 @@ document
             currentMaijiTimeline[index].url;
 
         document.getElementById("maiji-modal-time").innerText =
-            formatDisplayTime(currentMaijiTimeline[index].timestamp);
+        currentMaijiTimeline[index].timestamp
+            ? formatDisplayTime(currentMaijiTimeline[index].timestamp)
+            : currentMaijiTimeline[index].label;
 
     });
 </script>
