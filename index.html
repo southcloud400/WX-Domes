@@ -414,9 +414,8 @@ Loading...
 
     <div class="panel">
         <div class="panel-control">
-            <label>全国航空気象解説報(福岡FIR)</label>
+            <label>全国航空気象解説(福岡FIR)</label>
         </div>
-
         <img
             id="aviation-fir-commentary-image"
             src=""
@@ -427,12 +426,14 @@ Loading...
 
     <div class="panel">
         <div class="panel-control">
-            <label>Panel B</label>
+            <label>国内航空路予想断面図</label>
         </div>
+        <img
+            id="route-forecast-section-image"
+            src=""
+            class="weather-image"
+            onclick="enlargeImage(this)">
 
-        <div class="preflight-placeholder">
-            Content
-        </div>
     </div>
 
     <div class="panel">
@@ -477,12 +478,31 @@ Loading...
 
     <div class="panel">
         <div class="panel-control">
-            <label>Panel G</label>
+
+            <label id="low-level-sigwx-title">
+                下層悪天予想図
+            </label>
+
+           <select
+                id="low-level-sigwx-select"
+                onchange="loadLowLevelSigwx()">
+
+                <option value="fbsp39" selected>北海道</option>
+                <option value="fbsn39">東北</option>
+                <option value="fbtk39">東日本</option>
+                <option value="fbos39">西日本</option>
+                <option value="fbkg39">奄美</option>
+                <option value="fbok39">沖縄</option>
+
+            </select>
+
         </div>
 
-        <div class="preflight-placeholder">
-            Content
-        </div>
+        <img
+            id="low-level-sigwx-image"
+            src=""
+            class="weather-image"
+            onclick="enlargeImage(this)">
     </div>
 
     <div class="panel">
@@ -913,6 +933,59 @@ function loadAviationEnrouteCommentary(){
 
 }
 
+function loadRouteForecastSection(){
+
+    const now =
+        new Date();
+
+    const availableTime =
+        new Date(
+            now.getTime() - 2.5 * 60 * 60 * 1000
+        );
+
+    const hour =
+        availableTime.getUTCHours();
+
+    const latestHour =
+        Math.floor(hour / 3) * 3;
+
+    const timeCode =
+        String(latestHour).padStart(2, "0");
+
+    const url =
+        `https://www.data.jma.go.jp/airinfo/data/pict/nwp/fxjp106_${timeCode}.png`
+        + "?t=" + Date.now();
+
+    document.getElementById(
+        "route-forecast-section-image"
+    ).src = url;
+
+    console.log(
+        "国内航空路予想断面図 最新:",
+        `fxjp106_${timeCode}.png`
+    );
+}
+
+function loadLowLevelSigwx(){
+
+    const select =
+        document.getElementById("low-level-sigwx-select");
+
+    const fileName =
+        select.value;
+
+    const areaName =
+        select.options[select.selectedIndex].text;
+
+    document.getElementById("low-level-sigwx-title").innerText =
+        `下層悪天予想図（${areaName}・時系列）`;
+
+    document.getElementById("low-level-sigwx-image").src =
+        `https://www.data.jma.go.jp/airinfo/data/pict/low-level_sigwx/${fileName}.png`
+        + "?t=" + Date.now();
+
+}
+
 async function loadLightningImage(){
 
     const area =
@@ -1231,6 +1304,8 @@ loadMaijiTimelineTest();
 loadMetarText();
 loadAviationStationCommentary();
 loadAviationEnrouteCommentary();
+loadRouteForecastSection();
+loadLowLevelSigwx();
 
 
 document.getElementById("lightning-area-select")
@@ -1247,6 +1322,7 @@ document.getElementById("maiji-height-select")
 document.getElementById("maiji-section-select").addEventListener("change", () => {
     loadMaijiTimelineTest();
 });
+
 
 </script>
 
