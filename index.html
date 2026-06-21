@@ -9,7 +9,7 @@
 
 body{
     margin:0px;
-    font-family:sans-serif;
+    font-family: monospace;
     background:#0d3b66;
     color:white;
 }
@@ -33,13 +33,13 @@ body{
 .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:10px;
+    gap:3px;
 }
 
 .panel{
 
-    border:1px solid #888;
-    padding:5px;
+    border:0.1px solid #888;
+    padding:1px;
     background:white;
     color:black;
 }
@@ -49,7 +49,9 @@ body{
     display:flex;
     align-items:center;
     gap:8px;
-    font-weight:bold;
+    background:#0f1c2e;
+    border:1px solid #3d5a80;
+    color:white;
 }
 
 .weather-image{
@@ -178,22 +180,6 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-}
-
-.satellite-grid{
-    display:grid;
-    gap:0;
-    cursor:pointer;
-    transform:translateX(-20%);
-}
-
-.satellite-grid-3x2{
-    grid-template-columns:1fr 1fr 1fr;
-}
-
-.satellite-grid img{
-    width:100%;
-    display:block;
 }
 
 .satellite-wrapper{
@@ -354,6 +340,35 @@ body{
     margin-bottom:6px;
 }
 
+.asas-test-layer-box{
+    position:relative;
+     overflow:hidden;
+}
+
+#asas-cloud-grid{
+    position:absolute;
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    grid-template-rows:repeat(3, 1fr);
+
+    opacity:0.55;
+    pointer-events:none;
+
+    transform:translate(17.0%, 6.0%)scale(1.2);;
+}
+
+.satellite-tile{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
 
 </style>
 
@@ -376,7 +391,7 @@ body{
         style="width:220px; text-transform:uppercase;">
 
     <button onclick="loadMetarText()">
-        更新
+        Update
     </button>
 
 </div>
@@ -392,19 +407,46 @@ Loading...
 <div class="grid">
 
     <div class="panel">
-        <div id="asas-time"></div>
+        <div class="panel-control">
+            <a
+            id="satellite-time"
+            href="https://www.jma.go.jp/bosai/map.html#5/34.5/137/&elem=strengthen&contents=himawari"
+            target="_blank">
+            </a>
+        </div>
+      
+        <div class="asas-test-layer-box">
 
-        <img
-            id="asas-image"
-            src=""
-            class="weather-image"
-            onclick="enlargeImage(this)">
+            <img
+                id="asas-image"
+                src=""
+                class="weather-image"
+                onclick="enlargeImage(this)">
 
+            <div id="asas-cloud-grid">
+
+                <img class="satellite-tile" data-x="13" data-y="5">
+                <img class="satellite-tile" data-x="14" data-y="5">
+                <img class="satellite-tile" data-x="15" data-y="5">
+
+                <img class="satellite-tile" data-x="13" data-y="6">
+                <img class="satellite-tile" data-x="14" data-y="6">
+                <img class="satellite-tile" data-x="15" data-y="6">
+
+                <img class="satellite-tile" data-x="13" data-y="7">
+                <img class="satellite-tile" data-x="14" data-y="7">
+                <img class="satellite-tile" data-x="15" data-y="7">
+
+            </div>
+
+        </div>
     </div>
 
     <div class="panel">
         
-        <div id="fsas-time"></div>
+         <div class="panel-control">
+            <label>FSAS +24</label>
+        </div>
         
         <img
             id="fsas-image"
@@ -632,8 +674,6 @@ function formatMetarTafText(text){
 
 function enlargeImage(img){
 
-    console.log(img);
-
     document.getElementById("modalImage").src = img.src;
 
     const control =
@@ -700,9 +740,12 @@ async function loadWeatherMaps(){
 
     const data =
         await response.json();
+    
+    console.log(Object.keys(data));
 
     const asasFile =
-    data.asia_monochrome.now[data.asia_monochrome.now.length - 1];
+         data.near_monochrome.now[data.near_monochrome.now.length - 1
+         ];
 
     const fsasFile =
         data.asia.ft24[0];
@@ -715,12 +758,6 @@ async function loadWeatherMaps(){
 
     document.getElementById("fsas-image").src =
         baseUrl + fsasFile;
-
-    document.getElementById("asas-time").textContent =
-        "ASAS";
-
-    document.getElementById("fsas-time").textContent =
-        "FSAS +24";
 
 }
 
@@ -939,7 +976,7 @@ function imageExists(url){
 
 function openRadarPage(){
     window.open(
-        "https://www.jma.go.jp/bosai/nowc/",
+        "https://weather.yahoo.co.jp/weather/zoomradar/",
         "_blank"
     );
 }
@@ -1042,31 +1079,31 @@ async function loadSatelliteTime(){
 
     const response =
         await fetch(
-            "https://www.jma.go.jp/bosai/himawari/data/satimg/targetTimes_jp.json"
+            "https://www.jma.go.jp/bosai/himawari/data/satimg/targetTimes_fd.json"
         );
 
     const data =
         await response.json();
 
-    const latestTime =
-        data[data.length - 1].basetime;
+    const latest =
+        data[data.length - 1];
 
+    const baseTime =
+        latest.basetime;
+
+    const validTime =
+        latest.validtime;
+    
     document.getElementById("satellite-time").innerText =
-    formatJmaTileTime(latestTime);
+        "Satellite: " + formatJmaTileTime(validTime);
 
-    const testUrl =
-        `https://www.jma.go.jp/bosai/himawari/data/satimg/${latestTime}/fd/${latestTime}/SND/ETC/3/6/2.jpg`;
+    document.querySelectorAll(".satellite-tile").forEach((tile) => {
+        const x = tile.dataset.x;
+        const y = tile.dataset.y;
 
-
-
-document.querySelectorAll(".satellite-tile").forEach((tile) => {
-    const x = tile.dataset.x;
-    const y = tile.dataset.y;
-
-    tile.src =
-        `https://www.jma.go.jp/bosai/himawari/data/satimg/${latestTime}/fd/${latestTime}/SND/ETC/3/${x}/${y}.jpg`;
-});
-
+        tile.src =
+            `https://www.jma.go.jp/bosai/himawari/data/satimg/${baseTime}/fd/${validTime}/SND/ETC/4/${x}/${y}.jpg`;
+    });
 }
 
 async function loadRadarTime(){
@@ -1083,8 +1120,7 @@ async function loadRadarTime(){
         data[0].basetime;
 
     document.getElementById("radar-time").innerText =
-    formatJmaTileTime(latestTime);
-
+    "Radar Echo: " + formatJmaTileTime(latestTime);
 
     document.querySelectorAll(".radar-tile").forEach((tile) => {
 
@@ -1137,7 +1173,7 @@ loadLightningImage();
 loadWeatherMaps();
 loadMaijiPlane();
 loadMaijiSection();
-//loadSatelliteTime();
+loadSatelliteTime();
 loadRadarTime();
 loadMaijiTimelineTest();
 loadMetarText();
