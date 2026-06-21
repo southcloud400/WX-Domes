@@ -44,6 +44,14 @@ body{
     color:black;
 }
 
+.panel-control{
+    height:42px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:bold;
+}
+
 .weather-image{
     width:100%;
     height:auto;
@@ -55,7 +63,6 @@ body{
 
     background:#0f1c2e;
     border:1px solid #3d5a80;
-    border-radius:8px;
     padding:12px;
     margin-bottom:12px;
 
@@ -73,23 +80,12 @@ body{
 .asas-panel{
     position:relative;
     overflow:hidden;
+    aspect-ratio: 16 / 9;
 }
 
 .asas-overlay-window{
     position:relative;
     overflow:hidden;
-    height:240px;
-}
-
-#asas-image{
-    filter:invert(1);
-    opacity:1.0;
-    position:relative;
-    top:-30px;
-}
-
-.asas-panel #asas-image{
-    object-fit:cover;
 }
 
 .asas-satellite-overlay{
@@ -97,21 +93,39 @@ body{
     top:0;
     left:0;
     width:100%;
+    height:100%;
+
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
+    grid-template-rows:1fr 1fr 1fr;
+
     filter:contrast(1.5);
-    opacity:0.6;
+    opacity:0.45;
     pointer-events:none;
-    transform:translateX(-20%);
 }
 
 .asas-satellite-overlay img{
     width:100%;
+    height:100%;
+    object-fit:cover;
     display:block;
 }
 
+#asas-image{
+    filter:invert(1);
+    opacity:1.0;
+    position:relative;
+    top:0;
+}
+
+.asas-panel #asas-image{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
 .fsas-panel{
-    height:240px;
+    aspect-ratio: 16 / 9;
     overflow:hidden;
 }
 
@@ -255,6 +269,7 @@ body{
     justify-content:center;
     align-items:center;
     background:white;
+    position:relative;
 }
 
 .modal-content img{
@@ -265,6 +280,47 @@ body{
 
 #modalImage{
     filter:none;
+    filter:none;
+    max-width:96vw;
+    max-height:78vh;
+    object-fit:contain;
+}
+
+.modal-content {
+  max-width: 96vw;
+  max-height: 90vh;
+}
+
+.modal-time {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #ffffff;
+}
+
+#modal-slider {
+  width: 80vw;
+  height: 28px;
+}
+
+#modal-close-btn{
+    position:absolute;
+    top:10px;
+    right:10px;
+
+    font-size:28px;
+    font-weight:bold;
+
+    cursor:pointer;
+    border:none;
+    background:white;
+
+    width:40px;
+    height:40px;
+
+    border-radius:20px;
+
+    z-index:10000;
 }
 
 #maiji-modal-control{
@@ -276,6 +332,20 @@ body{
 
 #maiji-modal-slider{
     width:100%;
+    height:10px;
+    -webkit-appearance:none;
+    background:#cccccc;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+#maiji-modal-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:14px;
+    height:24px;
+    background:#0d3b66;
+    border-radius:2px;
+    cursor:pointer;
 }
 
 #maiji-modal-time{
@@ -283,6 +353,7 @@ body{
     font-weight:bold;
     margin-bottom:6px;
 }
+
 
 </style>
 
@@ -296,28 +367,21 @@ body{
 
 <div class="airport-input">
 
-    <label>Departure</label>
-    <input type="text" id="departure" value="RJOO">
+    <label>Airport</label>
 
-    <label>Destination</label>
-    <input type="text" id="destination" value="RJTT">
+    <input
+        type="text"
+        id="airport-list"
+        value="RJOO,RJTT,RJBB"
+        style="width:220px; text-transform:uppercase;">
 
-    <label>Alternate</label>
-    <input type="text" id="alternate" value="RJBB">
-
-    <button onclick="updateAirports()">
+    <button onclick="loadMetarText()">
         更新
-    </button>
-    
-    <button onclick="openMetar()">
-    METAR/TAF
     </button>
 
 </div>
 
 <div class="metar-panel">
-
-    <h3>METAR / TAF</h3>
 
     <pre id="metar-text">
 Loading...
@@ -325,44 +389,35 @@ Loading...
 
 </div>
 
-<div id="airport-display">
-    現在設定: RJOO → RJTT (ALT: RJBB)
-</div>
 <div class="grid">
 
-    <div class="panel asas-panel">
-        <div id="satellite-time" style="font-weight:bold; margin-bottom:6px;"></div>
-        <div class="asas-overlay-window">
+    <div class="panel">
+        <div id="asas-time"></div>
 
-            <img
-                id="asas-image"
-                src=""
-                class="weather-image"
-                onclick="enlargeImage(this)">
+        <img
+            id="asas-image"
+            src=""
+            class="weather-image"
+            onclick="enlargeImage(this)">
 
-            <div class="asas-satellite-overlay">
-                <img class="satellite-tile" data-x="5" data-y="2">
-                <img class="satellite-tile" data-x="6" data-y="2">
-                <img class="satellite-tile" data-x="7" data-y="2">
-
-                <img class="satellite-tile" data-x="5" data-y="3">
-                <img class="satellite-tile" data-x="6" data-y="3">
-                <img class="satellite-tile" data-x="7" data-y="3">
-            </div>
-
-        </div>
     </div>
 
-    <div class="panel fsas-panel">
-    <img
-        id="fsas-image"
-        src=""
-        class="weather-image"
-        onclick="enlargeImage(this)">
+    <div class="panel">
+        
+        <div id="fsas-time"></div>
+        
+        <img
+            id="fsas-image"
+            src=""
+            class="weather-image"
+            onclick="enlargeImage(this)">
+
     </div>
     
     <div class="panel">
-        <div id="radar-time" style="font-weight:bold; margin-bottom:6px;"></div>
+        <div class="panel-control">
+            <span id="radar-time"></span>
+        </div>
          <div class="radar-wrapper">
             <div class="radar-base-grid radar-grid-3x3"></div>
             
@@ -385,17 +440,14 @@ Loading...
     </div>
 
 <div class="panel">
-    <div style="margin-bottom:8px;">
-        <label for="lightning-area-select">発雷確率：</label>
+    <div class="panel-control">
+        <span id="lightning-time"></span>
 
         <select id="lightning-area-select">
             <option value="jp">日本</option>
             <option value="sjp">南日本</option>
         </select>
-    </div>
 
-    <div id="lightning-time" style="font-weight:bold; margin-bottom:6px;">
-        発雷確率
     </div>
 
     <img
@@ -419,23 +471,23 @@ Loading...
             onclick="enlargeImage(this)">
     </div>
 
-    <div class="panel">
+<div class="panel">
 
-    <div style="margin-bottom:8px;">
+    <div class="panel-control">
         <label for="maiji-height-select">高度：</label>
 
         <select id="maiji-height-select">
-            <option value="145">FL450</option>
-            <option value="141">FL410</option>
-            <option value="137">FL370</option>
-            <option value="133">FL330</option>
-            <option value="129">FL290</option>
-            <option value="125">FL250</option>
-            <option value="121">FL210</option>
-            <option value="117">FL170</option>
-            <option value="113">FL130</option>
-            <option value="109">FL090</option>
-            <option value="105">FL050</option>
+            <option value="145">FL450</option> 
+            <option value="141">FL410</option> 
+            <option value="137">FL370</option> 
+            <option value="133">FL330</option> 
+            <option value="129">FL290</option> 
+            <option value="125">FL250</option> 
+            <option value="121">FL210</option> 
+            <option value="117">FL170</option> 
+            <option value="113">FL130</option> 
+            <option value="109">FL090</option> 
+            <option value="105">FL050</option> 
             <option value="101">FL010</option>
         </select>
     </div>
@@ -446,61 +498,49 @@ Loading...
         class="weather-image"
         data-timeline="maiji-flat"
         onclick="enlargeImage(this)">
-    </div>
-    
-    <div class="panel">
-        
-       <div style="margin-bottom:8px;">
+
+</div>
+
+<div class="panel">
+
+    <div class="panel-control">
         <label for="maiji-section-select">断面：</label>
 
         <select id="maiji-section-select">
-            <option value="00">与那国-稚内</option>
-            <option value="01">福岡-釧路</option>
-            <option value="02">福岡-紋別</option>
-            <option value="03">東京-稚内</option>
-            <option value="04">東京-女満別</option>
-            <option value="05">福岡-東京</option>
-            <option value="06">鹿児島-東京</option>
-            <option value="07">石垣-東京</option>
-            <option value="08">与那国-高松</option>
-            <option value="49">与那国-福岡</option>
-            <option value="50">東経145.0度</option>
-            <option value="51">東経142.5度</option>
-            <option value="52">東経140.0度</option>
-            <option value="53">東経137.5度</option>
-            <option value="54">東経135.0度</option>
-            <option value="55">東経132.5度</option>
-            <option value="56">東経130.0度</option>
-            <option value="57">東経127.5度</option>
-            <option value="58">東経125.0度</option>
-            <option value="59">東経122.5度</option>
-
+            <option value="WANLC199">与那国-稚内</option> 
+            <option value="WANLC101">福岡-釧路</option> 
+            <option value="WANLC102">福岡-紋別</option>
+             <option value="WANLC103">東京-稚内</option>
+              <option value="WANLC104">東京-女満別</option>
+               <option value="WANLC105">福岡-東京</option> 
+               <option value="WANLC106">鹿児島-東京</option> 
+               <option value="WANLC107">石垣-東京</option> 
+               <option value="WANLC108">与那国-高松</option>
+               <option value="WANLC109">与那国-福岡</option> 
+               <option value="WANLC150">東経145.0度</option>
+               <option value="WANLC151">東経142.5度</option> 
+               <option value="WANLC152">東経140.0度</option> 
+               <option value="WANLC153">東経137.5度</option> 
+               <option value="WANLC154">東経135.0度</option> 
+               <option value="WANLC155">東経132.5度</option> 
+               <option value="WANLC156">東経130.0度</option> 
+               <option value="WANLC157">東経127.5度</option> 
+               <option value="WANLC158">東経125.0度</option> 
+               <option value="WANLC159">東経122.5度</option>
         </select>
-        
-        <img
+    </div>
+
+    <img
         id="maiji-plane-image"
         src=""
         class="weather-image"
         data-timeline="maiji-plane"
         onclick="enlargeImage(this)">
 
-    </div>
+</div>
 
 </div>
 
-<h2>METAR / TAF</h2>
-
-<div id="metar-frame-container">
-
-<iframe
-    id="metar-frame"
-    width="100%"
-    height="600"
-    src=""
->
-</iframe>
-
-</div>
 
 <script>
 
@@ -509,55 +549,14 @@ let maijiPlaneTimeline = [];
 let maijiFlatTimeline = [];
 let currentMaijiTimeline = [];
 
-function updateAirports(){
-
-    const dep =
-        document.getElementById("departure").value.toUpperCase();
-
-    const dest =
-        document.getElementById("destination").value.toUpperCase();
-
-    const alt =
-        document.getElementById("alternate").value.toUpperCase();
-
-    document.getElementById("airport-display").innerText =
-        `現在設定: ${dep} → ${dest} (ALT: ${alt})`;
-
-    loadMetarText();
-
-}
-
-function openMetar(){
-
-    const dep =
-        document.getElementById("departure").value.toUpperCase();
-
-    const dest =
-        document.getElementById("destination").value.toUpperCase();
-
-    const alt =
-        document.getElementById("alternate").value.toUpperCase();
-
-    const url =
-        `https://aviationweather.gov/data/metar/?ids=${dep},${dest},${alt}&hours=3&taf=1`;
-
-    document.getElementById("metar-frame").src = url;
-
-}
-
 async function loadMetarText(){
 
-    const dep =
-        document.getElementById("departure").value.toUpperCase();
-
-    const dest =
-        document.getElementById("destination").value.toUpperCase();
-
-    const alt =
-        document.getElementById("alternate").value.toUpperCase();
-
     const ids =
-        `${dep},${dest},${alt}`;
+    document
+        .getElementById("airport-list")
+        .value
+        .toUpperCase()
+        .replace(/\s+/g, "");
 
     const url =
         `https://aviationweather.gov/api/data/metar?ids=${ids}&format=raw&taf=true&hours=3`;
@@ -569,7 +568,66 @@ async function loadMetarText(){
         await response.text();
 
     document.getElementById("metar-text").innerText =
-        text;
+        formatMetarTafText(text);
+}
+
+function formatMetarTafText(text){
+
+    const lines =
+        text
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line !== "");
+
+    const groups = {};
+
+    lines.forEach(line => {
+
+        const match =
+            line.match(/^(METAR|TAF)\s+([A-Z]{4})/);
+
+        if(!match){
+            return;
+        }
+
+        const type =
+            match[1];
+
+        const airport =
+            match[2];
+
+        if(!groups[airport]){
+            groups[airport] = {
+                metar: [],
+                taf: []
+            };
+        }
+
+        if(type === "METAR"){
+            groups[airport].metar.push(line);
+        }
+
+        if(type === "TAF"){
+            groups[airport].taf.push(line);
+        }
+    });
+
+    let output = "";
+
+    Object.keys(groups).forEach(airport => {
+
+        output += `【${airport}】\n`;
+
+        output += "-METAR-\n";
+        output += groups[airport].metar.slice(0, 3).join("\n");
+        output += "\n\n";
+
+        output += "-TAF-\n";
+        output += groups[airport].taf.join("\n");
+        output += "\n\n--------------------\n\n";
+    });
+
+    return output;
 }
 
 function enlargeImage(img){
@@ -658,6 +716,12 @@ async function loadWeatherMaps(){
     document.getElementById("fsas-image").src =
         baseUrl + fsasFile;
 
+    document.getElementById("asas-time").textContent =
+        "ASAS";
+
+    document.getElementById("fsas-time").textContent =
+        "FSAS +24";
+
 }
 
 function formatTimestamp(date){
@@ -680,6 +744,16 @@ function formatDisplayTime(timestamp){
         timestamp.slice(10,12) +
         " UTC"
     );
+}
+
+function getWeatherMapTime(fileName){
+    const match = fileName.match(/\d{14}/);
+
+    if(!match){
+        return "";
+    }
+
+    return formatDisplayTime(match[0]);
 }
 
 function formatJmaTileTime(basetime){
@@ -779,7 +853,10 @@ async function loadMaijiTimelineTest(){
         document.getElementById("maiji-section-select").value;
 
     const imageCode =
-    `WANLC1${String(Number(selectedSection) + 1).padStart(2, "0")}`;
+    document.getElementById("maiji-section-select").value;
+
+    console.log("選択断面 value", selectedSection);
+    console.log("生成された画像コード", imageCode);
 
     const latest =
         await findLatestMaijiImage(imageCode);
@@ -833,6 +910,18 @@ async function loadMaijiTimelineTest(){
     document.getElementById("maiji-modal-time").innerText =
         formatDisplayTime(timeline[0].timestamp);
 }
+
+console.log(
+    "サムネイル",
+    timeline[0].url
+);
+
+console.log(
+    "モーダル初期",
+    timeline[timeline.length - 1].url
+);
+
+console.log("断面タイムライン中身", maijiPlaneTimeline);
 
 }
 
@@ -1048,7 +1137,7 @@ loadLightningImage();
 loadWeatherMaps();
 loadMaijiPlane();
 loadMaijiSection();
-loadSatelliteTime();
+//loadSatelliteTime();
 loadRadarTime();
 loadMaijiTimelineTest();
 loadMetarText();
@@ -1074,6 +1163,10 @@ document.getElementById("maiji-section-select").addEventListener("change", () =>
 <div id="imageModal" class="modal" onclick="closeModal()">
 
     <div class="modal-content" onclick="event.stopPropagation()">
+
+        <button id="modal-close-btn" onclick="closeModal()">
+        ✕
+        </button>
 
         <img id="modalImage">
 
