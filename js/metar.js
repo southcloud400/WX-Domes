@@ -60,9 +60,7 @@ async function loadMetarText(){
     try{
 
         const ids =
-        document
-            .getElementById("airport-list")
-            .value
+        els.airportList.value
             .toUpperCase()
             .replace(/\s+/g, "");
 

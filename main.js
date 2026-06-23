@@ -6,6 +6,9 @@ let preflightMode = false;
 
 const els = {
 
+    airportList:
+        document.getElementById("airport-list"),
+
     metarText:
         document.getElementById("metar-text"),
 
@@ -19,70 +22,15 @@ const els = {
         document.getElementById("maiji-modal-slider"),
 
     modalTime:
-        document.getElementById("maiji-modal-time")
+        document.getElementById("maiji-modal-time"),
+    
+    maijiHeightSelect:
+        document.getElementById("maiji-height-select"),
+
+    maijiSectionSelect:
+        document.getElementById("maiji-section-select")
 
 };
-
-function enlargeImage(img){
-
-    document.getElementById("modalImage").src = img.src;
-
-    const control =
-        document.getElementById("maiji-modal-control");
-
-    if(
-        img.dataset.timeline === "maiji-plane" ||
-        img.dataset.timeline === "maiji-flat" ||
-        img.dataset.timeline === "lightning"
-    ){
-
-        let timeline;
-
-        if(img.dataset.timeline === "maiji-flat"){
-            timeline = maijiFlatTimeline;
-        }else if(img.dataset.timeline === "lightning"){
-            timeline = lightningTimeline;
-        }else{
-            timeline = maijiPlaneTimeline;
-        }
-
-        currentMaijiTimeline = timeline;
-
-        if(timeline.length === 0){
-        control.style.display = "none";
-        return;
-        }
-
-        control.style.display = "block";
-
-        const slider =
-            document.getElementById("maiji-modal-slider");
-
-        slider.max =
-            timeline.length - 1;
-            timeline.length - 1;
-
-if(img.dataset.timeline === "lightning"){
-    slider.value = 0;
-}else{
-    slider.value = timeline.length - 1;
-}
-            document.getElementById("maiji-modal-time").innerText =
-            timeline[0].timestamp
-                ? formatDisplayTime(timeline[0].timestamp)
-                : timeline[0].label;
-                }
-
-    }else{
-
-        control.style.display = "none";
-    }
-
-    document
-        .getElementById("imageModal")
-        .classList.add("show");
-}
-
 
 async function loadWeatherMaps(){
 
@@ -308,10 +256,10 @@ async function findLatestMaijiImage(code){
 async function loadMaijiTimelineTest(){
 
     const selectedSection =
-        document.getElementById("maiji-section-select").value;
+        els.maijiSectionSelect.value;
 
     const imageCode =
-    document.getElementById("maiji-section-select").value;
+    els.maijiSectionSelect.value;
 
     console.log("選択断面 value", selectedSection);
     console.log("生成された画像コード", imageCode);
@@ -391,7 +339,7 @@ function openRadarPage(){
 async function loadMaijiSection(){
 
     const selectedHeight =
-        document.getElementById("maiji-height-select").value;
+        els.maijiHeightSelect.value;
 
     const imageCode =
         `WANLF${selectedHeight}`;
@@ -551,23 +499,22 @@ document.getElementById("lightning-area-select")
     });
 
 
-document.getElementById("maiji-height-select")
+els.maijiHeightSelect
     .addEventListener("change", () => {
         loadMaijiSection();
     });
 
-document.getElementById("maiji-section-select").addEventListener("change", () => {
+els.maijiSectionSelect.addEventListener("change", () => {
     loadMaijiTimelineTest();
 });
 
 
-document
-    .getElementById("preflight-toggle")
+els.preflightToggle
     .addEventListener("click", () => {
 
         preflightMode = !preflightMode;
 
-        document.getElementById("preflight-toggle").innerText =
+        els.preflightToggle.innerText =
             preflightMode
                 ? "Preflight ON"
                 : "Preflight OFF";
