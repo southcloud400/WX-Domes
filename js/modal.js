@@ -12,7 +12,7 @@ document
        const index =
             Number(this.value);
 
-        document.getElementById("modalImage").src =
+        els.modalImage.src =
             currentMaijiTimeline[index].url;
 
         document.getElementById("maiji-modal-time").innerText =
@@ -23,10 +23,10 @@ document
 
 function enlargeImage(img){
 
-    document.getElementById("modalImage").src = img.src;
+    els.modalImage.src = img.src;
 
     const control =
-        document.getElementById("maiji-modal-control");
+        els.modalControl;
 
     if(
         img.dataset.timeline === "maiji-plane" ||
@@ -54,29 +54,29 @@ function enlargeImage(img){
         control.style.display = "block";
 
         const slider =
-            document.getElementById("maiji-modal-slider");
+            els.modalSlider;
 
         slider.max =
             timeline.length - 1;
             timeline.length - 1;
 
-if(img.dataset.timeline === "lightning"){
-    slider.value = 0;
-}else{
-    slider.value = timeline.length - 1;
-}
-            document.getElementById("maiji-modal-time").innerText =
-            timeline[0].timestamp
-                ? formatDisplayTime(timeline[0].timestamp)
-                : timeline[0].label;
-                }
-
+    if(img.dataset.timeline === "lightning"){
+        slider.value = 0;
     }else{
-
-        control.style.display = "none";
+        slider.value = timeline.length - 1;
     }
+                els.modalTime.innerText =
+                timeline[0].timestamp
+                    ? formatDisplayTime(timeline[0].timestamp)
+                    : timeline[0].label;
+                    }
 
-    document
-        .getElementById("imageModal")
-        .classList.add("show");
+        }else{
+
+            control.style.display = "none";
+        }
+
+        document
+            .getElementById("imageModal")
+            .classList.add("show");
 }
