@@ -1,42 +1,159 @@
+const JMA_URLS = {
+    weatherMapList:
+        "https://www.jma.go.jp/bosai/weather_map/data/list.json",
+
+    weatherMapPngBase:
+        "https://www.jma.go.jp/bosai/weather_map/data/png/",
+
+    satelliteTimes:
+        "https://www.jma.go.jp/bosai/himawari/data/satimg/targetTimes_fd.json",
+
+    satelliteTileBase:
+        "https://www.jma.go.jp/bosai/himawari/data/satimg",
+
+    radarTimes:
+        "https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json",
+
+    radarTileBase:
+        "https://www.jma.go.jp/bosai/jmatile/data/nowc",
+
+    mapTileBase:
+        "https://www.jma.go.jp/tile/gsi/pale"
+};
+
+const DEFAULT_TILE_COORDINATES = [
+    [13, 5],
+    [14, 5],
+    [15, 5],
+    [13, 6],
+    [14, 6],
+    [15, 6],
+    [13, 7],
+    [14, 7],
+    [15, 7]
+];
+
+let appEventsInitialized = false;
+
+function getElement(id){
+    const element =
+        document.getElementById(id);
+
+    if(!element){
+        throw new Error(`Required element not found: ${id}`);
+    }
+
+    return element;
+}
+
 const els = {
 
     airportList:
-        document.getElementById("airport-list"),
+        getElement("airport-list"),
 
     metarText:
-        document.getElementById("metar-text"),
+        getElement("metar-text"),
+
+    metarUpdateButton:
+        getElement("metar-update-button"),
+
+    asasImage:
+        getElement("asas-image"),
+
+    fsasImage:
+        getElement("fsas-image"),
+
+    satelliteTime:
+        getElement("satellite-time"),
+
+    radarTime:
+        getElement("radar-time"),
+
+    radarBaseGrid:
+        document.querySelector(".radar-base-grid"),
+
+    radarGrid:
+        document.querySelector(".radar-grid"),
+
+    imageModal:
+        getElement("imageModal"),
+
+    modalContent:
+        document.querySelector(".modal-content"),
+
+    modalCloseButton:
+        getElement("modal-close-btn"),
 
     modalImage:
-        document.getElementById("modalImage"),
+        getElement("modalImage"),
 
     modalControl:
-        document.getElementById("maiji-modal-control"),
+        getElement("maiji-modal-control"),
 
     modalSlider:
-        document.getElementById("maiji-modal-slider"),
+        getElement("maiji-modal-slider"),
 
     modalTime:
-        document.getElementById("maiji-modal-time"),
-    
+        getElement("maiji-modal-time"),
+
     maijiHeightSelect:
-        document.getElementById("maiji-height-select"),
+        getElement("maiji-height-select"),
 
     maijiSectionSelect:
-        document.getElementById("maiji-section-select"),
-    
+        getElement("maiji-section-select"),
+
     lightningImage:
-        document.getElementById("lightning-image"),
+        getElement("lightning-image"),
 
     lightningTime:
-        document.getElementById("lightning-time"),
+        getElement("lightning-time"),
 
     lightningAreaSelect:
-        document.getElementById("lightning-area-select"),
+        getElement("lightning-area-select"),
 
     preflightToggle:
-        document.getElementById("preflight-toggle")
+        getElement("preflight-toggle")
 
 };
+
+async function fetchJson(url){
+    const response =
+        await fetch(url);
+
+    if(!response.ok){
+        throw new Error(`HTTP ${response.status}: ${url}`);
+    }
+
+    return response.json();
+}
+
+function getLatestItem(items, key){
+    if(!Array.isArray(items) || items.length === 0){
+        return null;
+    }
+
+    return [...items].sort((a, b) => {
+        const valueA =
+            typeof a === "string"
+                ? a
+                : a[key];
+
+        const valueB =
+            typeof b === "string"
+                ? b
+                : b[key];
+
+        return String(valueA).localeCompare(String(valueB));
+    }).at(-1);
+}
+
+async function runStartupTask(name, task){
+    try{
+        await task();
+    }catch(error){
+        console.error(`${name} failed`, error);
+    }
+}
 
 async function filterExistingImages(items){
 
@@ -58,38 +175,33 @@ async function filterExistingImages(items){
 
 async function loadWeatherMaps(){
 
-    const response =
-        await fetch(
-            "https://www.jma.go.jp/bosai/weather_map/data/list.json"
-        );
-
     const data =
-        await response.json();
-    
-    console.log(Object.keys(data));
+        await fetchJson(JMA_URLS.weatherMapList);
 
     const asasFile =
-         data.near_monochrome.now[data.near_monochrome.now.length - 1
-         ];
+        getLatestItem(data.near_monochrome?.now, "basetime");
 
     const fsasFile =
-        data.asia.ft24[
-            data.asia.ft24.length - 1
-        ];
+        getLatestItem(data.asia?.ft24, "basetime");
 
-    const baseUrl =
-        "https://www.jma.go.jp/bosai/weather_map/data/png/";
+    if(!asasFile || !fsasFile){
+        throw new Error("Weather map list does not include expected images");
+    }
 
-    document.getElementById("asas-image").src =
-        baseUrl + asasFile;
+    els.asasImage.src =
+        JMA_URLS.weatherMapPngBase + asasFile;
 
-    document.getElementById("fsas-image").src =
-        baseUrl + fsasFile;
+    els.fsasImage.src =
+        JMA_URLS.weatherMapPngBase + fsasFile;
 
 }
 
 
 function formatJmaTileTime(basetime){
+
+    if(!basetime || basetime.length < 12){
+        return "時刻不明";
+    }
 
     return (
         basetime.slice(0,4) + "/" +
@@ -110,24 +222,23 @@ function openRadarPage(){
 
 async function loadSatelliteTime(){
 
-    const response =
-        await fetch(
-            "https://www.jma.go.jp/bosai/himawari/data/satimg/targetTimes_fd.json"
-        );
-
     const data =
-        await response.json();
+        await fetchJson(JMA_URLS.satelliteTimes);
 
     const latest =
-        data[data.length - 1];
+        getLatestItem(data, "validtime");
+
+    if(!latest){
+        throw new Error("Satellite target time is empty");
+    }
 
     const baseTime =
         latest.basetime;
 
     const validTime =
         latest.validtime;
-    
-    document.getElementById("satellite-time").innerText =
+
+    els.satelliteTime.innerText =
         "Satellite: " + formatJmaTileTime(validTime);
 
     document.querySelectorAll(".satellite-tile").forEach((tile) => {
@@ -135,74 +246,81 @@ async function loadSatelliteTime(){
         const y = tile.dataset.y;
 
         tile.src =
-            `https://www.jma.go.jp/bosai/himawari/data/satimg/${baseTime}/fd/${validTime}/SND/ETC/4/${x}/${y}.jpg`;
+            `${JMA_URLS.satelliteTileBase}/${baseTime}/fd/${validTime}/SND/ETC/4/${x}/${y}.jpg`;
     });
 }
 
 async function loadRadarTime(){
 
-    const response =
-        await fetch(
-            "https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json"
-        );
-
     const data =
-        await response.json();
+        await fetchJson(JMA_URLS.radarTimes);
+
+    const latest =
+        getLatestItem(data, "basetime");
+
+    if(!latest){
+        throw new Error("Radar target time is empty");
+    }
 
     const latestTime =
-        data[0].basetime;
+        latest.basetime;
 
-    document.getElementById("radar-time").innerText =
-    "Radar Echo: " + formatJmaTileTime(latestTime);
+    els.radarTime.innerText =
+        "Radar Echo: " + formatJmaTileTime(latestTime);
 
     document.querySelectorAll(".radar-tile").forEach((tile) => {
 
-    const x = tile.dataset.x;
-    const y = tile.dataset.y;
+        const x = tile.dataset.x;
+        const y = tile.dataset.y;
 
-    tile.src =
-        `https://www.jma.go.jp/bosai/jmatile/data/nowc/${latestTime}/none/${latestTime}/surf/hrpns/4/${x}/${y}.png`;
+        tile.src =
+            `${JMA_URLS.radarTileBase}/${latestTime}/none/${latestTime}/surf/hrpns/4/${x}/${y}.png`;
 
     });
 
-    const radarBaseGrid =
-    document.querySelector(".radar-base-grid");
+    if(!els.radarBaseGrid){
+        return;
+    }
 
-radarBaseGrid.innerHTML = "";
+    els.radarBaseGrid.replaceChildren();
 
-const baseTiles = [
-    [13, 5],
-    [14, 5],
-    [15, 5],
-    [13, 6],
-    [14, 6],
-    [15, 6],
-    [13, 7],
-    [14, 7],
-    [15, 7]
-];
+    DEFAULT_TILE_COORDINATES.forEach(([x, y]) => {
+        const img = document.createElement("img");
 
-baseTiles.forEach(([x, y]) => {
-    const img = document.createElement("img");
+        img.src =
+            `${JMA_URLS.mapTileBase}/4/${x}/${y}.png`;
 
-    img.src =
-        `https://www.jma.go.jp/tile/gsi/pale/4/${x}/${y}.png`;
-
-    radarBaseGrid.appendChild(img);
-});
+        els.radarBaseGrid.appendChild(img);
+    });
 
 }
 
-function initializeApp(){
+function initAppEvents(){
+    if(appEventsInitialized){
+        return;
+    }
 
-    loadLightningImage();
-    loadWeatherMaps();
-    loadMaijiSection();
-    loadSatelliteTime();
-    loadRadarTime();
-    loadMaijiTimelineTest();
-    loadMetarText();
+    initMetarEvents();
+    initMaijiEvents();
+    initLightningEvents();
+    initPreflightEvents();
+    initModalEvents();
 
+    appEventsInitialized = true;
 }
 
-initializeApp();
+async function initializeApp(){
+
+    initAppEvents();
+
+    await Promise.allSettled([
+        runStartupTask("Lightning", loadLightningImage),
+        runStartupTask("Weather maps", loadWeatherMaps),
+        runStartupTask("Maiji section", loadMaijiSection),
+        runStartupTask("Satellite", loadSatelliteTime),
+        runStartupTask("Radar", loadRadarTime),
+        runStartupTask("Maiji timeline", loadMaijiTimelineTest),
+        runStartupTask("METAR", loadMetarText)
+    ]);
+
+}

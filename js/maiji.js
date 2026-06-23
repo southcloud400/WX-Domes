@@ -1,5 +1,10 @@
 let maijiPlaneTimeline = [];
 let maijiFlatTimeline = [];
+let maijiFlatRequestId = 0;
+let maijiPlaneRequestId = 0;
+
+const MAIJI_BASE_URL =
+    "https://www.data.jma.go.jp/airinfo/data/pict/maiji";
 
 function formatTimestamp(date){
     const y = date.getUTCFullYear();
@@ -12,6 +17,9 @@ function formatTimestamp(date){
 }
 
 function formatDisplayTime(timestamp){
+    if(!timestamp || timestamp.length < 12){
+        return "時刻不明";
+    }
 
     return (
         timestamp.slice(0,4) + "/" +
@@ -23,12 +31,73 @@ function formatDisplayTime(timestamp){
     );
 }
 
+function imageExists(url, timeoutMs = 8000){
+    return new Promise((resolve) => {
+        const img = new Image();
+        const timeoutId =
+            window.setTimeout(() => resolve(false), timeoutMs);
+
+        img.onload = () => {
+            window.clearTimeout(timeoutId);
+            resolve(true);
+        };
+
+        img.onerror = () => {
+            window.clearTimeout(timeoutId);
+            resolve(false);
+        };
+
+        img.src = url;
+    });
+}
+
+function buildMaijiImageUrl(code, timestamp){
+    return `${MAIJI_BASE_URL}/${code}_RJTD_${timestamp}.PNG`;
+}
+
+function createMaijiCandidate(code, time){
+    const timestamp =
+        formatTimestamp(time);
+
+    return {
+        code,
+        time,
+        timestamp,
+        url: buildMaijiImageUrl(code, timestamp)
+    };
+}
+
+async function findFirstExistingImage(candidates, batchSize = 8){
+    for(let index = 0; index < candidates.length; index += batchSize){
+        const batch =
+            candidates.slice(index, index + batchSize);
+
+        const results =
+            await Promise.all(
+                batch.map(async candidate => {
+                    const exists =
+                        await imageExists(candidate.url);
+
+                    return exists
+                        ? candidate
+                        : null;
+                })
+            );
+
+        const found =
+            results.find(candidate => candidate !== null);
+
+        if(found){
+            return found;
+        }
+    }
+
+    return null;
+}
+
 async function findLatestMaijiImage(code){
-
-    const baseUrl =
-        "https://www.data.jma.go.jp/airinfo/data/pict/maiji/";
-
-    const now = new Date();
+    const now =
+        new Date();
 
     now.setUTCMinutes(
         Math.floor(now.getUTCMinutes() / 30) * 30,
@@ -36,46 +105,59 @@ async function findLatestMaijiImage(code){
         0
     );
 
-    for(let i = 0; i < 96; i++){
+    const candidates =
+        Array.from({ length: 96 }, (_, index) => {
+            const targetTime =
+                new Date(now.getTime() - index * 30 * 60 * 1000);
 
-        const targetTime =
-            new Date(now.getTime() - i * 30 * 60 * 1000);
+            return createMaijiCandidate(code, targetTime);
+        });
 
-        const timestamp =
-            formatTimestamp(targetTime);
-
-        const url =
-            `${baseUrl}${code}_RJTD_${timestamp}.PNG`;
-
-        const exists =
-            await imageExists(url);
-
-        if(exists){
-
-            return {
-                code: code,
-                time: targetTime,
-                timestamp: timestamp,
-                url: url
-            };
-        }
-    }
-
-    return null;
+    return findFirstExistingImage(candidates);
 }
 
-function imageExists(url){
-    return new Promise((resolve) => {
-        const img = new Image();
+async function buildMaijiTimeline(imageCode){
+    const latest =
+        await findLatestMaijiImage(imageCode);
 
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
+    if(!latest){
+        return [];
+    }
 
-        img.src = url;
-    });
+    const candidates =
+        Array.from({ length: 7 }, (_, index) => {
+            const hoursBack =
+                6 - index;
+
+            const targetTime =
+                new Date(latest.time.getTime() - hoursBack * 60 * 60 * 1000);
+
+            return createMaijiCandidate(imageCode, targetTime);
+        });
+
+    return filterExistingImages(candidates);
+}
+
+function setMaijiImageState(image, timeline, emptyMessage){
+    if(timeline.length === 0){
+        image.removeAttribute("src");
+        image.alt = emptyMessage;
+        return;
+    }
+
+    const latest =
+        timeline[timeline.length - 1];
+
+    image.src =
+        latest.url;
+
+    image.alt =
+        formatDisplayTime(latest.timestamp);
 }
 
 async function loadMaijiSection(){
+    const requestId =
+        ++maijiFlatRequestId;
 
     const selectedHeight =
         els.maijiHeightSelect.value;
@@ -83,124 +165,53 @@ async function loadMaijiSection(){
     const imageCode =
         `WANLF${selectedHeight}`;
 
-    const latest =
-        await findLatestMaijiImage(imageCode);
+    const timeline =
+        await buildMaijiTimeline(imageCode);
 
-    if(!latest){
-        console.log("毎時大気解析（平面）の最新画像が見つかりません");
+    if(requestId !== maijiFlatRequestId){
         return;
     }
 
-    const timeline = [];
+    maijiFlatTimeline =
+        timeline;
 
-for(let i = 0; i <= 6; i++){
-
-    const targetTime =
-        new Date(latest.time.getTime() - i * 60 * 60 * 1000);
-
-    const timestamp =
-        formatTimestamp(targetTime);
-
-    const url =
-        `https://www.data.jma.go.jp/airinfo/data/pict/maiji/${imageCode}_RJTD_${timestamp}.PNG`;
-
-    const exists =
-        await imageExists(url);
-
-    if(exists){
-        timeline.push({
-            index: timeline.length,
-            timestamp: timestamp,
-            url: url
-        });
-    }
-}
-
-maijiFlatTimeline = timeline.reverse();
-
-    maijiFlatTimeline = timeline.reverse();
-
-    if(maijiFlatTimeline.length > 0){
-
-    const latest =
-        maijiFlatTimeline[
-            maijiFlatTimeline.length - 1
-        ];
-
-    document.getElementById("maiji-section-image").src =
-        latest.url;
-    }
+    setMaijiImageState(
+        getElement("maiji-section-image"),
+        maijiFlatTimeline,
+        "毎時大気解析（平面）が見つかりません"
+    );
 }
 
 async function loadMaijiTimelineTest(){
-
-    const selectedSection =
-        els.maijiSectionSelect.value;
+    const requestId =
+        ++maijiPlaneRequestId;
 
     const imageCode =
-    els.maijiSectionSelect.value;
+        els.maijiSectionSelect.value;
 
-    console.log("選択断面 value", selectedSection);
-    console.log("生成された画像コード", imageCode);
+    const timeline =
+        await buildMaijiTimeline(imageCode);
 
-    const latest =
-        await findLatestMaijiImage(imageCode);
-
-    if(!latest){
-        console.log("毎時大気解析の最新画像が見つかりません");
+    if(requestId !== maijiPlaneRequestId){
         return;
     }
 
-    const candidates = [];
+    maijiPlaneTimeline =
+        timeline;
 
-    for(let i = 0; i <= 6; i++){
-
-        const targetTime =
-            new Date(latest.time.getTime() - i * 60 * 60 * 1000);
-
-        const timestamp =
-            formatTimestamp(targetTime);
-
-        candidates.push({
-            index: i,
-            timestamp: timestamp,
-            url:
-                `https://www.data.jma.go.jp/airinfo/data/pict/maiji/${imageCode}_RJTD_${timestamp}.PNG`
-        });
+    setMaijiImageState(
+        getElement("maiji-plane-image"),
+        maijiPlaneTimeline,
+        "毎時大気解析（断面）が見つかりません"
+    );
 }
 
-maijiPlaneTimeline =
-    await filterExistingImages(candidates);
-
-maijiPlaneTimeline.reverse();
-
-    maijiPlaneTimeline = timeline.reverse();
-
-    console.log("断面タイムライン件数", maijiPlaneTimeline.length);
-    console.log("断面タイムライン中身", maijiPlaneTimeline);
-
-    if(maijiPlaneTimeline.length > 0){
-
-    const latest =
-        maijiPlaneTimeline[
-            maijiPlaneTimeline.length - 1
-        ];
-
-    document.getElementById("maiji-plane-image").src =
-        latest.url;
-
-    document.getElementById("maiji-modal-time").innerText =
-        formatDisplayTime(latest.timestamp);
-    }
-
-}
-
-els.maijiHeightSelect
-    .addEventListener("change", () => {
+function initMaijiEvents(){
+    els.maijiHeightSelect.addEventListener("change", () => {
         loadMaijiSection();
     });
 
-els.maijiSectionSelect
-    .addEventListener("change", () => {
+    els.maijiSectionSelect.addEventListener("change", () => {
         loadMaijiTimelineTest();
     });
+}
