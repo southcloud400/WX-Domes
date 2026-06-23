@@ -1,9 +1,3 @@
-
-let maijiPlaneTimeline = [];
-let maijiFlatTimeline = [];
-let currentMaijiTimeline = [];
-let preflightMode = false;
-
 const els = {
 
     airportList:
@@ -28,9 +22,39 @@ const els = {
         document.getElementById("maiji-height-select"),
 
     maijiSectionSelect:
-        document.getElementById("maiji-section-select")
+        document.getElementById("maiji-section-select"),
+    
+    lightningImage:
+        document.getElementById("lightning-image"),
+
+    lightningTime:
+        document.getElementById("lightning-time"),
+
+    lightningAreaSelect:
+        document.getElementById("lightning-area-select"),
+
+    preflightToggle:
+        document.getElementById("preflight-toggle")
 
 };
+
+async function filterExistingImages(items){
+
+    const results =
+        await Promise.all(
+            items.map(async item => {
+
+                const exists =
+                    await imageExists(item.url);
+
+                return exists
+                    ? item
+                    : null;
+            })
+        );
+
+    return results.filter(item => item !== null);
+}
 
 async function loadWeatherMaps(){
 
@@ -169,15 +193,16 @@ baseTiles.forEach(([x, y]) => {
 
 }
 
-loadLightningImage();
-loadWeatherMaps();
-loadMaijiSection();
-loadSatelliteTime();
-loadRadarTime();
-loadMaijiTimelineTest();
-loadMetarText();
+function initializeApp(){
 
-document.getElementById("lightning-area-select")
-    .addEventListener("change", () => {
-        loadLightningImage();
-    });
+    loadLightningImage();
+    loadWeatherMaps();
+    loadMaijiSection();
+    loadSatelliteTime();
+    loadRadarTime();
+    loadMaijiTimelineTest();
+    loadMetarText();
+
+}
+
+initializeApp();

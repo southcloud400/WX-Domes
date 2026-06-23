@@ -1,3 +1,6 @@
+let maijiPlaneTimeline = [];
+let maijiFlatTimeline = [];
+
 function formatTimestamp(date){
     const y = date.getUTCFullYear();
     const m = String(date.getUTCMonth() + 1).padStart(2, "0");
@@ -90,28 +93,30 @@ async function loadMaijiSection(){
 
     const timeline = [];
 
-    for(let i = 0; i <= 6; i++){
+for(let i = 0; i <= 6; i++){
 
-        const targetTime =
-            new Date(latest.time.getTime() - i * 60 * 60 * 1000);
+    const targetTime =
+        new Date(latest.time.getTime() - i * 60 * 60 * 1000);
 
-        const timestamp =
-            formatTimestamp(targetTime);
+    const timestamp =
+        formatTimestamp(targetTime);
 
-        const url =
-            `https://www.data.jma.go.jp/airinfo/data/pict/maiji/${imageCode}_RJTD_${timestamp}.PNG`;
+    const url =
+        `https://www.data.jma.go.jp/airinfo/data/pict/maiji/${imageCode}_RJTD_${timestamp}.PNG`;
 
-        const exists =
-            await imageExists(url);
+    const exists =
+        await imageExists(url);
 
-        if(exists){
-            timeline.push({
-                index: timeline.length,
-                timestamp: timestamp,
-                url: url
-            });
-        }
+    if(exists){
+        timeline.push({
+            index: timeline.length,
+            timestamp: timestamp,
+            url: url
+        });
     }
+}
+
+maijiFlatTimeline = timeline.reverse();
 
     maijiFlatTimeline = timeline.reverse();
 
@@ -146,7 +151,7 @@ async function loadMaijiTimelineTest(){
         return;
     }
 
-    const timeline = [];
+    const candidates = [];
 
     for(let i = 0; i <= 6; i++){
 
@@ -156,19 +161,18 @@ async function loadMaijiTimelineTest(){
         const timestamp =
             formatTimestamp(targetTime);
 
-        const url =
-            `https://www.data.jma.go.jp/airinfo/data/pict/maiji/${imageCode}_RJTD_${timestamp}.PNG`;
-        const exists =
-            await imageExists(url);
+        candidates.push({
+            index: i,
+            timestamp: timestamp,
+            url:
+                `https://www.data.jma.go.jp/airinfo/data/pict/maiji/${imageCode}_RJTD_${timestamp}.PNG`
+        });
+}
 
-        if(exists){
-            timeline.push({
-                index: timeline.length,
-                timestamp: timestamp,
-                url: url
-            });
-        }
-    }
+maijiPlaneTimeline =
+    await filterExistingImages(candidates);
+
+maijiPlaneTimeline.reverse();
 
     maijiPlaneTimeline = timeline.reverse();
 
