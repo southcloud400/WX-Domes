@@ -1,3 +1,5 @@
+let currentMaijiTimeline = [];
+
 function closeModal(){
 
     document

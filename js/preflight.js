@@ -1,3 +1,5 @@
+let preflightMode = false;
+
 async function loadAviationStationCommentary(){
 
     document.getElementById(
