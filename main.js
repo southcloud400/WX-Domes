@@ -23,11 +23,7 @@ const els = {
 
 };
 
-
-
-
-
-enlargeImage(img){
+function enlargeImage(img){
 
     document.getElementById("modalImage").src = img.src;
 
@@ -87,12 +83,6 @@ if(img.dataset.timeline === "lightning"){
         .classList.add("show");
 }
 
-function closeModal(){
-
-    document
-        .getElementById("imageModal")
-        .classList.remove("show");
-}
 
 async function loadWeatherMaps(){
 
@@ -570,21 +560,6 @@ document.getElementById("maiji-section-select").addEventListener("change", () =>
     loadMaijiTimelineTest();
 });
 
-document
-    .getElementById("maiji-modal-slider")
-    .addEventListener("input", function(){
-
-       const index =
-            Number(this.value);
-
-        document.getElementById("modalImage").src =
-            currentMaijiTimeline[index].url;
-
-        document.getElementById("maiji-modal-time").innerText =
-        currentMaijiTimeline[index].timestamp
-            ? formatDisplayTime(currentMaijiTimeline[index].timestamp)
-            : currentMaijiTimeline[index].label;
-    });
 
 document
     .getElementById("preflight-toggle")
