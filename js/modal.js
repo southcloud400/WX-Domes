@@ -1,16 +1,14 @@
-let currentMaijiTimeline = [];
-
 function getTimelineForImage(img){
     if(img.dataset.timeline === "maiji-flat"){
-        return maijiFlatTimeline;
+        return appState.maiji.flatTimeline;
     }
 
     if(img.dataset.timeline === "maiji-plane"){
-        return maijiPlaneTimeline;
+        return appState.maiji.planeTimeline;
     }
 
     if(img.dataset.timeline === "lightning"){
-        return lightningTimeline;
+        return appState.lightning.timeline;
     }
 
     return null;
@@ -18,7 +16,7 @@ function getTimelineForImage(img){
 
 function formatTimelineItemLabel(item){
     if(item.timestamp){
-        return formatDisplayTime(item.timestamp);
+        return formatUtcTimestamp(item.timestamp);
     }
 
     return item.label || "";
@@ -26,7 +24,7 @@ function formatTimelineItemLabel(item){
 
 function setModalTimelineItem(index){
     const item =
-        currentMaijiTimeline[index];
+        appState.modal.timeline[index];
 
     if(!item){
         return;
@@ -44,7 +42,7 @@ function closeModal(){
 }
 
 function openTimelineModal(img, timeline){
-    currentMaijiTimeline =
+    appState.modal.timeline =
         timeline;
 
     if(timeline.length === 0){

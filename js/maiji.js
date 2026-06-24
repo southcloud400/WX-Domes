@@ -1,8 +1,3 @@
-let maijiPlaneTimeline = [];
-let maijiFlatTimeline = [];
-let maijiFlatRequestId = 0;
-let maijiPlaneRequestId = 0;
-
 const MAIJI_BASE_URL =
     "https://www.data.jma.go.jp/airinfo/data/pict/maiji";
 
@@ -14,21 +9,6 @@ function formatTimestamp(date){
     const min = String(date.getUTCMinutes()).padStart(2, "0");
 
     return `${y}${m}${d}${h}${min}00`;
-}
-
-function formatDisplayTime(timestamp){
-    if(!timestamp || timestamp.length < 12){
-        return "時刻不明";
-    }
-
-    return (
-        timestamp.slice(0,4) + "/" +
-        timestamp.slice(4,6) + "/" +
-        timestamp.slice(6,8) + " " +
-        timestamp.slice(8,10) + ":" +
-        timestamp.slice(10,12) +
-        " UTC"
-    );
 }
 
 function imageExists(url, timeoutMs = 8000){
@@ -49,6 +29,21 @@ function imageExists(url, timeoutMs = 8000){
 
         img.src = url;
     });
+}
+
+const imageExistsCache = new Map();
+
+async function imageExistsCached(url){
+    if(imageExistsCache.has(url)){
+        return imageExistsCache.get(url);
+    }
+
+    const exists =
+        await imageExists(url);
+
+    imageExistsCache.set(url, exists);
+
+    return exists;
 }
 
 function buildMaijiImageUrl(code, timestamp){
@@ -152,12 +147,12 @@ function setMaijiImageState(image, timeline, emptyMessage){
         latest.url;
 
     image.alt =
-        formatDisplayTime(latest.timestamp);
+        formatUtcTimestamp(latest.timestamp);
 }
 
 async function loadMaijiSection(){
     const requestId =
-        ++maijiFlatRequestId;
+        ++appState.maiji.flatRequestId;
 
     const selectedHeight =
         els.maijiHeightSelect.value;
@@ -168,23 +163,23 @@ async function loadMaijiSection(){
     const timeline =
         await buildMaijiTimeline(imageCode);
 
-    if(requestId !== maijiFlatRequestId){
+    if(requestId !== appState.maiji.flatRequestId){
         return;
     }
 
-    maijiFlatTimeline =
+    appState.maiji.flatTimeline =
         timeline;
 
     setMaijiImageState(
         getElement("maiji-section-image"),
-        maijiFlatTimeline,
+        appState.maiji.flatTimeline,
         "毎時大気解析（平面）が見つかりません"
     );
 }
 
-async function loadMaijiTimelineTest(){
+async function loadMaijiPlane(){
     const requestId =
-        ++maijiPlaneRequestId;
+        ++appState.maiji.planeRequestId;
 
     const imageCode =
         els.maijiSectionSelect.value;
@@ -192,16 +187,16 @@ async function loadMaijiTimelineTest(){
     const timeline =
         await buildMaijiTimeline(imageCode);
 
-    if(requestId !== maijiPlaneRequestId){
+    if(requestId !== appState.maiji.planeRequestId){
         return;
     }
 
-    maijiPlaneTimeline =
+    appState.maiji.planeTimeline =
         timeline;
 
     setMaijiImageState(
         getElement("maiji-plane-image"),
-        maijiPlaneTimeline,
+        appState.maiji.planeTimeline,
         "毎時大気解析（断面）が見つかりません"
     );
 }
@@ -212,6 +207,6 @@ function initMaijiEvents(){
     });
 
     els.maijiSectionSelect.addEventListener("change", () => {
-        loadMaijiTimelineTest();
+        loadMaijiPlane();
     });
 }

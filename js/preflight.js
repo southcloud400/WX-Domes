@@ -1,5 +1,3 @@
-let preflightMode = false;
-
 const PREFLIGHT_IMAGE_URLS = {
     aviationStationCommentary:
         "https://www.data.jma.go.jp/airinfo/data/pict/ajpn_cmnt/qyya86-0.png",
@@ -81,24 +79,27 @@ function loadPreflightImages(){
 }
 
 function setPreflightMode(enabled){
-    preflightMode =
+    appState.preflight.enabled =
         enabled;
 
     els.preflightToggle.innerText =
-        preflightMode
+        appState.preflight.enabled
             ? "Preflight ON"
             : "Preflight OFF";
 
-    document.body.classList.toggle("preflight-on", preflightMode);
+    document.body.classList.toggle(
+        "preflight-on",
+        appState.preflight.enabled
+    );
 
-    if(preflightMode){
+    if(appState.preflight.enabled){
         loadPreflightImages();
     }
 }
 
 function initPreflightEvents(){
     els.preflightToggle.addEventListener("click", () => {
-        setPreflightMode(!preflightMode);
+        setPreflightMode(!appState.preflight.enabled);
     });
 
     getElement("low-level-sigwx-select")

@@ -1,6 +1,8 @@
 const METAR_API_URL =
     "https://aviationweather.gov/api/data/metar";
 
+let metarRequestId = 0;
+
 function parseAirportIds(value){
     const ids =
         value
@@ -88,12 +90,12 @@ function formatMetarTafText(text, airportIds = []){
             const metarText =
                 group.metar.length > 0
                     ? group.metar.slice(0, 3).join("\n")
-                    : "該当なし";
+                    : "";
 
             const tafText =
                 group.taf.length > 0
                     ? group.taf.join("\n")
-                    : "該当なし";
+                    : "";
 
             return (
                 `【${airport}】\n` +
@@ -109,6 +111,9 @@ function formatMetarTafText(text, airportIds = []){
 }
 
 async function loadMetarText(){
+
+    const requestId =
+        ++metarRequestId;
 
     try{
         const airportIds =
@@ -130,6 +135,10 @@ async function loadMetarText(){
 
         const response =
             await fetch(`${METAR_API_URL}?${params.toString()}`);
+        
+        if(requestId !== metarRequestId){
+            return;
+        }
 
         if(!response.ok){
             throw new Error(`HTTP ${response.status}`);
@@ -137,6 +146,10 @@ async function loadMetarText(){
 
         const text =
             await response.text();
+
+        if(requestId !== metarRequestId){
+            return;
+        }
 
         els.metarText.innerText =
             formatMetarTafText(text, airportIds);

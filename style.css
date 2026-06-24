@@ -37,9 +37,6 @@ body{
     cursor:pointer;
 }
 
-.preflight-only{
-}
-
 .preflight-panel{
     display:none;
     background:#0f1c2e;
@@ -222,10 +219,15 @@ body.preflight-on .preflight-panel{
 .modal-content{
     width:95%;
     height:95%;
+
+    max-width:96vw;
+    max-height:90vh;
+
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
+
     background:white;
     position:relative;
 }
@@ -238,17 +240,10 @@ body.preflight-on .preflight-panel{
 
 #modalImage{
     filter:none;
-    filter:none;
-    max-width:96vw;
-    max-height:78vh;
+    max-width:99vw;
+    max-height:90vh;
     object-fit:contain;
 }
-
-.modal-content {
-  max-width: 96vw;
-  max-height: 90vh;
-}
-
 
 #modal-close-btn{
     position:absolute;
@@ -321,7 +316,7 @@ body.preflight-on .preflight-panel{
     opacity:0.55;
     pointer-events:none;
 
-    transform:translate(18.6%, 5.0%)scale(1.2);;
+    transform:translate(18.6%, 5.0%)scale(1.2);
 }
 
 .satellite-tile{

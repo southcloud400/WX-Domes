@@ -1,6 +1,3 @@
-let lightningTimeline = [];
-let lightningRequestId = 0;
-
 const LIGHTNING_BASE_URL =
     "https://www.imocwx.com/guid";
 
@@ -23,7 +20,7 @@ function createLightningCandidates(area){
 
 async function loadLightningImage(){
     const requestId =
-        ++lightningRequestId;
+        ++appState.lightning.requestId;
 
     const area =
         els.lightningAreaSelect.value;
@@ -35,14 +32,14 @@ async function loadLightningImage(){
         const timeline =
             await filterExistingImages(createLightningCandidates(area));
 
-        if(requestId !== lightningRequestId){
+        if(requestId !== appState.lightning.requestId){
             return;
         }
 
-        lightningTimeline =
+        appState.lightning.timeline =
             timeline;
 
-        if(lightningTimeline.length === 0){
+        if(appState.lightning.timeline.length === 0){
             els.lightningImage.removeAttribute("src");
             els.lightningImage.alt =
                 "発雷確率画像が見つかりません";
@@ -52,22 +49,22 @@ async function loadLightningImage(){
         }
 
         els.lightningImage.src =
-            lightningTimeline[0].url;
+            appState.lightning.timeline[0].url;
 
         els.lightningImage.alt =
-            lightningTimeline[0].label;
+            appState.lightning.timeline[0].label;
 
         els.lightningTime.innerText =
-            `発雷確率 ${lightningTimeline[0].label}`;
+            `発雷確率 ${appState.lightning.timeline[0].label}`;
 
     }catch(error){
-        if(requestId !== lightningRequestId){
+        if(requestId !== appState.lightning.requestId){
             return;
         }
 
         console.error("発雷確率取得失敗", error);
 
-        lightningTimeline = [];
+        appState.lightning.timeline = [];
         els.lightningImage.removeAttribute("src");
         els.lightningTime.innerText =
             "発雷確率 取得失敗";

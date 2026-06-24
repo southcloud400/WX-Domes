@@ -35,6 +35,28 @@ const DEFAULT_TILE_COORDINATES = [
 
 let appEventsInitialized = false;
 
+const appState = {
+    preflight: {
+        enabled: false
+    },
+
+    lightning: {
+        timeline: [],
+        requestId: 0
+    },
+    
+    maiji: {
+        flatTimeline: [],
+        planeTimeline: [],
+        flatRequestId: 0,
+        planeRequestId: 0
+    },
+
+    modal: {
+        timeline: []
+    }
+};
+
 function getElement(id){
     const element =
         document.getElementById(id);
@@ -162,7 +184,7 @@ async function filterExistingImages(items){
             items.map(async item => {
 
                 const exists =
-                    await imageExists(item.url);
+                    await imageExistsCached(item.url);
 
                 return exists
                     ? item
@@ -197,18 +219,18 @@ async function loadWeatherMaps(){
 }
 
 
-function formatJmaTileTime(basetime){
+function formatUtcTimestamp(timestamp){
 
-    if(!basetime || basetime.length < 12){
+    if(!timestamp || timestamp.length < 12){
         return "時刻不明";
     }
 
     return (
-        basetime.slice(0,4) + "/" +
-        basetime.slice(4,6) + "/" +
-        basetime.slice(6,8) + " " +
-        basetime.slice(8,10) + ":" +
-        basetime.slice(10,12) +
+        timestamp.slice(0,4) + "/" +
+        timestamp.slice(4,6) + "/" +
+        timestamp.slice(6,8) + " " +
+        timestamp.slice(8,10) + ":" +
+        timestamp.slice(10,12) +
         " UTC"
     );
 }
@@ -239,7 +261,7 @@ async function loadSatelliteTime(){
         latest.validtime;
 
     els.satelliteTime.innerText =
-        "Satellite: " + formatJmaTileTime(validTime);
+        "Satellite: " + formatUtcTimestamp(validTime);
 
     document.querySelectorAll(".satellite-tile").forEach((tile) => {
         const x = tile.dataset.x;
@@ -266,7 +288,7 @@ async function loadRadarTime(){
         latest.basetime;
 
     els.radarTime.innerText =
-        "Radar Echo: " + formatJmaTileTime(latestTime);
+        "Radar Echo: " + formatUtcTimestamp(latestTime);
 
     document.querySelectorAll(".radar-tile").forEach((tile) => {
 
@@ -319,7 +341,7 @@ async function initializeApp(){
         runStartupTask("Maiji section", loadMaijiSection),
         runStartupTask("Satellite", loadSatelliteTime),
         runStartupTask("Radar", loadRadarTime),
-        runStartupTask("Maiji timeline", loadMaijiTimelineTest),
+        runStartupTask("Maiji cross section",loadMaijiPlane),
         runStartupTask("METAR", loadMetarText)
     ]);
 
