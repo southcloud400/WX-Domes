@@ -16,6 +16,9 @@ const JMA_URLS = {
 
     radarTileBase:
         "https://www.jma.go.jp/bosai/jmatile/data/nowc",
+    
+    lightningObservedBase:
+        "https://www.jma.go.jp/bosai/jmatile/data/nowc",
 
     mapTileBase:
         "https://www.jma.go.jp/tile/gsi/pale"
@@ -315,6 +318,71 @@ async function loadRadarTime(){
         els.radarBaseGrid.appendChild(img);
     });
 
+    loadObservedLightning(latestTime);
+}
+
+function lonLatToRadarPercent(lon, lat){
+
+    const leftLon = 122.0;
+    const rightLon = 150.0;
+    const topLat = 48.0;
+    const bottomLat = 20.0;
+
+    const x =
+        ((lon - leftLon) / (rightLon - leftLon)) * 100;
+
+    const y =
+        ((topLat - lat) / (topLat - bottomLat)) * 100;
+
+    return { x, y };
+}
+
+async function loadObservedLightning(latestTime){
+
+    const layer =
+        getElement("lightning-observed-layer");
+
+    layer.replaceChildren();
+
+    const url =
+        `${JMA_URLS.lightningObservedBase}/${latestTime}/none/${latestTime}/surf/liden/data.geojson?id=liden`;
+
+    try{
+        const data =
+            await fetchJson(url);
+
+        data.features.forEach(feature => {
+            const coordinates =
+                feature.geometry?.coordinates;
+
+            if(!coordinates || coordinates.length < 2){
+                return;
+            }
+
+            const [lon, lat] =
+                coordinates;
+
+            const position =
+                lonLatToRadarPercent(lon, lat);
+
+            const point =
+                document.createElement("div");
+
+            point.className =
+                "observed-lightning-point";
+
+            point.style.left =
+                `${position.x}%`;
+
+            point.style.top =
+                `${position.y}%`;
+
+            layer.appendChild(point);
+        });
+
+    }catch(error){
+        console.error("雷GeoJSON取得失敗", error);
+    }
 }
 
 function initAppEvents(){

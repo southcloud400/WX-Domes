@@ -1,7 +1,49 @@
 const LIGHTNING_BASE_URL =
     "https://www.imocwx.com/guid";
 
-function createLightningCandidates(area){
+function lonLatToRadarPercent(lon, lat){
+
+    const zoom = 4;
+
+    const leftTileX = 13;
+    const topTileY = 5;
+    const tileCountX = 3;
+    const tileCountY = 3;
+
+    const lonToTileX = lon =>
+        ((lon + 180) / 360) * Math.pow(2, zoom);
+
+    const latToTileY = lat => {
+        const latRad =
+            lat * Math.PI / 180;
+
+        return (
+            (1 -
+                Math.log(
+                    Math.tan(latRad) +
+                    1 / Math.cos(latRad)
+                ) / Math.PI
+            ) / 2
+        ) * Math.pow(2, zoom);
+    };
+
+    const tileX =
+        lonToTileX(lon);
+
+    const tileY =
+        latToTileY(lat);
+
+    const x =
+        ((tileX - leftTileX) / tileCountX) * 100;
+
+    const y =
+        ((tileY - topTileY) / tileCountY) * 100;
+
+    return { x, y };
+}
+
+
+    function createLightningCandidates(area){
     const cacheBuster =
         Date.now();
 
@@ -11,7 +53,7 @@ function createLightningCandidates(area){
 
         return {
             index,
-            label: `${index}時間後`,
+            label: createLightningTimeLabel(index),
             url:
                 `${LIGHTNING_BASE_URL}/gd3${fileNumber}${area}.png?${cacheBuster}`
         };
