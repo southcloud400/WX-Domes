@@ -42,6 +42,31 @@ function lonLatToRadarPercent(lon, lat){
     return { x, y };
 }
 
+function createLightningTimeLabel(index){
+
+    const now = new Date();
+
+    const jst =
+        new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+    jst.setMinutes(0, 0, 0);
+
+    const baseHour =
+        Math.floor(jst.getHours() / 3) * 3;
+
+    jst.setHours(baseHour);
+
+    const start =
+        new Date(jst.getTime() + (index - 4) * 3 * 60 * 60 * 1000);
+
+    const end =
+        new Date(start.getTime() + 3 * 60 * 60 * 1000);
+
+    const formatHour = date =>
+        String(date.getHours()).padStart(2, "0");
+
+    return `${formatHour(start)}:00-${formatHour(end)}:00 JST`;
+}
 
     function createLightningCandidates(area){
     const cacheBuster =
