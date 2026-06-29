@@ -27,6 +27,13 @@ body{
     gap:3px;
 }
 
+.button-small{
+    font-family: monospace;
+    font-size:12px;
+    padding:4px 10px;
+    cursor:pointer;
+}
+
 .preflight-control{
     margin-bottom:12px;
 }
@@ -58,7 +65,7 @@ body.preflight-on .preflight-panel{
 }
 
 .preflight-placeholder,
-.preflight-summary{
+.preflight-{
     min-height:260px;
     padding:1px;
     background:white;
@@ -364,9 +371,12 @@ body.preflight-on .preflight-panel{
     margin-left:auto;
 }
 
-#ai-summary-button{
-    font-family:monospace;
-    font-size:12px;
-    padding:4px 10px;
-    cursor:pointer;
+#ai-summary-text {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+
+    line-height: 1.5;
+    padding: 12px;
+    font-size: 14px;
 }
