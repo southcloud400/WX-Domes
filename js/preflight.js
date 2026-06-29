@@ -12,6 +12,10 @@ const PREFLIGHT_IMAGE_URLS = {
         "https://www.data.jma.go.jp/airinfo/data/pict/low-level_sigwx"
 };
 
+const AI_SUMMARY_WORKER_URL =
+    "https://wx-domes-ai-summary.just-966.workers.dev";
+
+
 function cacheBustedUrl(url){
     return `${url}?t=${Date.now()}`;
 }
@@ -144,4 +148,64 @@ function initPreflightEvents(){
         .addEventListener("change", () => {
             loadLowLevelSigwx();
         });
+    
+    getElement("ai-summary-button")
+    .addEventListener("click", () => {
+        showDummyAiSummary();
+    });
+    showDummyAiSummary
+}
+
+function createDummyAiSummary(){
+
+    return `【AI Summary】
+
+Overview
+
+Airport Remark
+
+Enroute Weather
+
+■ JAPAN NORTH
+■ JAPAN EAST
+■ JAPAN WEST
+■ JAPAN SOUTH
+
+※AI要約は補助情報です。
+最終判断は公式資料・各社の規程に従ってください。`;
+
+}
+
+async function showDummyAiSummary(){
+
+    const summaryText =
+        getElement("ai-summary-text");
+
+    summaryText.innerText =
+        "AI Summary 取得中...";
+
+    try{
+        const response =
+            await fetch(AI_SUMMARY_WORKER_URL);
+
+        if(!response.ok){
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data =
+            await response.json();
+
+        appState.aiSummary.text =
+            data.summary;
+
+        summaryText.innerText =
+            appState.aiSummary.text;
+
+    }catch(error){
+
+        console.error("AI Summary取得失敗", error);
+
+        summaryText.innerText =
+            "AI Summary の取得に失敗しました";
+    }
 }

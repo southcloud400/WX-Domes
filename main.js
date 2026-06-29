@@ -61,7 +61,13 @@ const appState = {
 
     windy: {
     flightLevel: "FL390"
+    },
+
+    aiSummary:{
+    text:"",
+    loading:false
     }
+    
 };
 
 function getElement(id){

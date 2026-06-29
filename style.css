@@ -356,7 +356,17 @@ body.preflight-on .preflight-panel{
 
 .windy-frame{
     width:100%;
-    aspect-ratio:16 / 9;
     border:none;
     display:block;
+}
+
+.panel-control button{
+    margin-left:auto;
+}
+
+#ai-summary-button{
+    font-family:monospace;
+    font-size:12px;
+    padding:4px 10px;
+    cursor:pointer;
 }

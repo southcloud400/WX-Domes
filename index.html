@@ -61,14 +61,19 @@ Loading...
 
         </div>
 
-        <div class="panel">
+       <div class="panel">
+
             <div class="panel-control">
                 <label>AI Summary</label>
+                <button id="ai-summary-button">
+                    Generate
+                </button>
             </div>
 
-            <div class="preflight-summary">
-                AIサマリーをここに表示予定
-            </div>
+            <pre id="ai-summary-text">
+                AIサマリー未生成
+            </pre>
+
         </div>
 
     </div>
@@ -291,6 +296,8 @@ Loading...
     <iframe
         class="windy-frame"
         src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=°C&metricWind=kt&zoom=3&overlay=wind&product=ecmwf&level=200h&lat=37.721&lon=139.045&pressure=true"
+        width="100%"
+        height="450"
         frameborder="0">
     </iframe>
 </div>
