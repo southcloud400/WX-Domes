@@ -185,8 +185,23 @@ async function showDummyAiSummary(){
         "AI Summary 取得中...";
 
     try{
+        const airportCodes =
+            getElement("airport-list")
+                .value
+                .split(",")
+                .map(code => code.trim().toUpperCase())
+                .filter(code => code.length > 0);
+
         const response =
-            await fetch(AI_SUMMARY_WORKER_URL);
+            await fetch(AI_SUMMARY_WORKER_URL,{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    airports: airportCodes
+                })
+            });
 
         if(!response.ok){
             throw new Error(`HTTP ${response.status}`);
