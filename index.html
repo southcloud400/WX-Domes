@@ -282,12 +282,23 @@ Loading...
 </div>
 
 <div class="panel">
-    <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank">
-        国内悪天解析を開く
-    </a>
+    <div class="panel-control">
+        <label id="windy-title">
+            Windy
+        </label>
+    </div>
+
+    <iframe
+        class="windy-frame"
+        src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=°C&metricWind=kt&zoom=3&overlay=wind&product=ecmwf&level=200h&lat=37.721&lon=139.045&pressure=true"
+        frameborder="0">
+    </iframe>
 </div>
     
     <div class="panel">
+        <div class="panel-control">
+            <label>FBJP</label>
+        </div>
         <img
             src="https://www.data.jma.go.jp/airinfo/data/pict/fbjp/fbjp.png"
             class="weather-image">

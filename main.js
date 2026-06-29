@@ -57,6 +57,10 @@ const appState = {
 
     modal: {
         timeline: []
+    },
+
+    windy: {
+    flightLevel: "FL390"
     }
 };
 
@@ -238,6 +242,20 @@ function formatUtcTimestamp(timestamp){
     );
 }
 
+function updateWindyTitle(){
+
+    const title =
+        document.getElementById("windy-title");
+
+    if(!title){
+        return;
+    }
+
+    title.textContent =
+        `Windy (${appState.windy.flightLevel})`;
+
+}
+
 function openRadarPage(){
     window.open(
         "https://weather.yahoo.co.jp/weather/zoomradar/",
@@ -395,6 +413,7 @@ function initAppEvents(){
     initLightningEvents();
     initPreflightEvents();
     initModalEvents();
+    updateWindyTitle();
 
     appEventsInitialized = true;
 }

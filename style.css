@@ -353,3 +353,10 @@ body.preflight-on .preflight-panel{
     object-fit:cover;
     display:block;
 }
+
+.windy-frame{
+    width:100%;
+    aspect-ratio:16 / 9;
+    border:none;
+    display:block;
+}
