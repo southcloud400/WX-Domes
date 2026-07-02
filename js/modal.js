@@ -38,7 +38,17 @@ function setModalTimelineItem(index){
 }
 
 function closeModal(){
+
     els.imageModal.classList.remove("show");
+
+    getElement("modal-cloudtop-index").style.display =
+    "none";
+
+    appState.modal.type =
+        null;
+
+    appState.modal.satelliteBox =
+        null;
 }
 
 function openTimelineModal(img, timeline){
@@ -92,15 +102,27 @@ function enlargeImage(img){
     els.imageModal.classList.add("show");
 }
 
+function setModalSatelliteItem(index){
+
+    const item =
+        appState.modal.timeline[index];
+
+    if(!item || !appState.modal.satelliteBox){
+        return;
+    }
+
+    setSatelliteOverlayTiles(
+        appState.modal.satelliteBox,
+        item
+    );
+
+    els.modalTime.innerText =
+        formatUtcTimestamp(item.validtime);
+}
+
 function openSatelliteOverlayModal(){
-    getElement("modal-satellite-overlay-container").style.display =
-    "none";
-    
 
     els.modalImage.style.display =
-        "none";
-
-    els.modalControl.style.display =
         "none";
 
     const container =
@@ -122,6 +144,38 @@ function openSatelliteOverlayModal(){
 
     container.appendChild(clonedBox);
 
+    appState.modal.satelliteBox =
+        clonedBox;
+
+    appState.modal.timeline =
+        appState.satellite.timeline;
+
+    appState.modal.type =
+        "satellite";
+
+    if(appState.modal.timeline.length > 0){
+
+        els.modalControl.style.display =
+            "block";
+
+        els.modalSlider.max =
+            appState.modal.timeline.length - 1;
+
+        els.modalSlider.value =
+            appState.modal.timeline.length - 1;
+
+        setModalSatelliteItem(
+            appState.modal.timeline.length - 1
+        );
+
+    }else{
+        els.modalControl.style.display =
+            "none";
+    }
+
+    getElement("modal-cloudtop-index").style.display =
+    "block";
+
     container.style.display =
         "block";
 
@@ -129,8 +183,14 @@ function openSatelliteOverlayModal(){
 }
 
 function initModalEvents(){
-    els.modalSlider.addEventListener("input", function(){
-        setModalTimelineItem(Number(this.value));
+   els.modalSlider.addEventListener("input", function(){
+
+    if(appState.modal.type === "satellite"){
+        setModalSatelliteItem(Number(this.value));
+        return;
+    }
+
+    setModalTimelineItem(Number(this.value));
     });
 
     document.querySelectorAll(".weather-image").forEach(image => {

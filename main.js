@@ -59,11 +59,18 @@ const appState = {
     },
 
     modal: {
-        timeline: []
+    timeline: [],
+    type: null,
+    satelliteBox: null
     },
 
     windy: {
     flightLevel: "FL390"
+    },
+
+    satellite: {
+    timeline: [],
+    requestId: 0
     },
 
     aiSummary:{
@@ -280,7 +287,21 @@ function openRadarPage(){
     );
 }
 
+function setSatelliteOverlayTiles(box, item){
+
+    box.querySelectorAll(".satellite-overlay-cloud-tile").forEach(tile => {
+        const x = tile.dataset.x;
+        const y = tile.dataset.y;
+
+        tile.src =
+            `${JMA_URLS.satelliteTileBase}/${item.basetime}/fd/${item.validtime}/SND/ETC/5/${x}/${y}.jpg`;
+    });
+}
+
 async function loadSatelliteTime(){
+
+    const requestId =
+        ++appState.satellite.requestId;
 
     const data =
         await fetchJson(JMA_URLS.satelliteTimes);
@@ -292,41 +313,67 @@ async function loadSatelliteTime(){
         throw new Error("Satellite target time is empty");
     }
 
-    const baseTime =
-        latest.basetime;
-
-    const validTime =
+    const latestTime =
         latest.validtime;
 
+    const sixHoursAgo =
+        String(Number(latestTime.slice(8, 10)) - 6);
+
+    const timeline =
+        data
+            .filter(item => {
+                const minute =
+                    item.validtime.slice(10, 12);
+
+                const itemMs =
+                    new Date(
+                        `${item.validtime.slice(0,4)}-${item.validtime.slice(4,6)}-${item.validtime.slice(6,8)}T${item.validtime.slice(8,10)}:${item.validtime.slice(10,12)}:00Z`
+                    ).getTime();
+
+                const latestMs =
+                    new Date(
+                        `${latestTime.slice(0,4)}-${latestTime.slice(4,6)}-${latestTime.slice(6,8)}T${latestTime.slice(8,10)}:${latestTime.slice(10,12)}:00Z`
+                    ).getTime();
+
+                const diffMs =
+                    latestMs - itemMs;
+
+                return (
+                    diffMs >= 0 &&
+                    diffMs <= 6 * 60 * 60 * 1000 &&
+                    (minute === "00" || minute === "30")
+                );
+            })
+            .sort((a, b) =>
+                String(a.validtime).localeCompare(String(b.validtime))
+            );
+
+    if(requestId !== appState.satellite.requestId){
+        return;
+    }
+
+    appState.satellite.timeline =
+        timeline;
+
+    const current =
+        timeline[timeline.length - 1];
+
     els.satelliteTime.innerText =
-    "Satellite: " +
-    formatUtcTimestamp(validTime);
+        "Satellite: " +
+        formatUtcTimestamp(current.validtime);
 
-    document.querySelectorAll(".satellite-tile").forEach((tile) => {
-        const x = tile.dataset.x;
-        const y = tile.dataset.y;
+    const sourceBox =
+        document.querySelector(".satellite-overlay-box");
 
-        tile.src =
-            `${JMA_URLS.satelliteTileBase}/${baseTime}/fd/${validTime}/SND/ETC/4/${x}/${y}.jpg`;
-    });
-    
-    document.querySelectorAll(".satellite-overlay-coastline-tile").forEach((tile) => {
+    setSatelliteOverlayTiles(sourceBox, current);
+
+    document.querySelectorAll(".satellite-overlay-coastline-tile").forEach(tile => {
         const x = tile.dataset.x;
         const y = tile.dataset.y;
 
         tile.src =
             `${JMA_URLS.satelliteMapTileBase}/5/${x}/${y}.png`;
     });
-
-    document.querySelectorAll(".satellite-overlay-cloud-tile").forEach((tile) => {
-        const x = tile.dataset.x;
-        const y = tile.dataset.y;
-
-        tile.src =
-            `${JMA_URLS.satelliteTileBase}/${baseTime}/fd/${validTime}/SND/ETC/5/${x}/${y}.jpg`;
-    });
-
-
 }
 
 function initSatelliteOverlayEvents(){

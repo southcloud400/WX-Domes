@@ -493,3 +493,90 @@ body.preflight-on .preflight-panel{
 #satellite-overlay-toggle{
     margin-left:auto;
 }
+
+#modal-cloudtop-index{
+    display:none;
+
+    position:absolute;
+    right:24px;
+    top:80px;
+
+    width:150px;
+    height:520px;
+
+    background:white;
+    color:#222;
+
+    padding:18px 10px;
+    box-sizing:border-box;
+
+    z-index:10001;
+
+    font-family:monospace;
+}
+
+.cloudtop-scale{
+    display:flex;
+    justify-content:center;
+    align-items:stretch;
+    gap:14px;
+
+    height:430px;
+}
+
+.cloudtop-bar{
+    width:12px;
+    height:100%;
+
+    background:linear-gradient(
+        to top,
+        #000000 0%,
+        #003cff 12.5%,
+        #00b7ff 25%,
+        #00ff66 37.5%,
+        #ffff00 50%,
+        #ff9900 62.5%,
+        #ff3300 75%,
+        #cc0000 87.5%,
+        #990000 100%
+    );
+
+    border-left:1px solid #333;
+    border-right:1px solid #333;
+
+    position:relative;
+}
+
+.cloudtop-labels{
+    height:100%;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+
+    font-size:20px;
+    line-height:1;
+}
+
+.cloudtop-labels span{
+    position:relative;
+}
+
+.cloudtop-labels span::before{
+    content:"";
+    position:absolute;
+    left:-16px;
+    top:50%;
+
+    width:12px;
+    height:1px;
+
+    background:#333;
+}
+
+.cloudtop-unit{
+    margin-top:12px;
+
+    text-align:center;
+    font-size:18px;
+}
