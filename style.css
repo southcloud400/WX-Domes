@@ -127,13 +127,6 @@ body.preflight-on .preflight-panel{
 
 }
 
-#asas-image{
-    filter:invert(1);
-    opacity:1.0;
-    position:relative;
-    top:0;
-}
-
 .fsas-panel{
     aspect-ratio: 16 / 9;
     overflow:hidden;
@@ -379,4 +372,124 @@ body.preflight-on .preflight-panel{
     line-height: 1.5;
     padding: 12px;
     font-size: 14px;
+}
+
+.satellite-overlay-box{
+    position:relative;
+    width:100%;
+    aspect-ratio:4 / 3;
+    overflow:hidden;
+    background:#000;
+    margin-top:3px;
+    cursor:pointer;
+}
+
+/* ===== ASAS ===== */
+
+.satellite-overlay-asas-image{
+    position:absolute;
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    object-fit:contain;
+
+    filter:invert(1) brightness(1.1) contrast(1.5);
+    opacity:1.0;
+
+    pointer-events:none;
+
+    transform:translate(3%, 6.5%) scale(1.7);
+    transform-origin:center center;
+
+    z-index:1;
+}
+
+/* ===== Coastline ===== */
+
+#satellite-overlay-coastline-grid{
+    position:absolute;
+    inset:0;
+
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    grid-template-rows:repeat(3, 1fr);
+
+    pointer-events:none;
+
+    z-index:10;
+}
+
+.satellite-overlay-coastline-tile{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    margin:0;
+}
+
+/* ===== Satellite ===== */
+
+#satellite-overlay-cloud-grid{
+    position:absolute;
+    inset:0;
+
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    grid-template-rows:repeat(3, 1fr);
+
+    pointer-events:none;
+
+    z-index:5;
+}
+
+.satellite-overlay-cloud-tile{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    margin:0;
+
+    opacity:0.75;
+}
+
+/* ===== Modal ===== */
+
+#modal-satellite-overlay-container{
+    display:none;
+}
+
+#modal-satellite-overlay-container .satellite-overlay-box{
+    width:min(95vw, calc(85vh * 4 / 3));
+    aspect-ratio:4 / 3;
+    margin-top:0;
+}
+
+#modal-satellite-overlay-container img{
+    width:100%;
+    height:100%;
+    display:block;
+    margin:0;
+}
+
+#modal-satellite-overlay-container
+.satellite-overlay-asas-image{
+    object-fit:contain;
+}
+
+#modal-satellite-overlay-container
+.satellite-overlay-coastline-tile,
+#modal-satellite-overlay-container
+.satellite-overlay-cloud-tile{
+    object-fit:cover;
+}
+
+#satellite-overlay-time{
+    color:white;
+    font-family:monospace;
+}
+
+#satellite-overlay-toggle{
+    margin-left:auto;
 }

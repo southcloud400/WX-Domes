@@ -10,6 +10,9 @@ const JMA_URLS = {
 
     satelliteTileBase:
         "https://www.jma.go.jp/bosai/himawari/data/satimg",
+    
+    satelliteMapTileBase:
+    "https://www.jma.go.jp/tile/jma/sat",
 
     radarTimes:
         "https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json",
@@ -100,6 +103,9 @@ const els = {
 
     satelliteTime:
         getElement("satellite-time"),
+
+    satelliteOverlayToggle:
+        getElement("satellite-overlay-toggle"),
 
     radarTime:
         getElement("radar-time"),
@@ -214,21 +220,26 @@ async function loadWeatherMaps(){
         await fetchJson(JMA_URLS.weatherMapList);
 
     const asasFile =
+        getLatestItem(data.asia?.now, "basetime");
+
+    const spasFile =
         getLatestItem(data.near_monochrome?.now, "basetime");
 
     const fsasFile =
         getLatestItem(data.asia?.ft24, "basetime");
 
-    if(!asasFile || !fsasFile){
+    if(!asasFile || !spasFile || !fsasFile){
         throw new Error("Weather map list does not include expected images");
     }
 
     els.asasImage.src =
         JMA_URLS.weatherMapPngBase + asasFile;
 
+    getElement("satellite-overlay-asas-image").src =
+        JMA_URLS.weatherMapPngBase + spasFile;
+
     els.fsasImage.src =
         JMA_URLS.weatherMapPngBase + fsasFile;
-
 }
 
 
@@ -288,7 +299,8 @@ async function loadSatelliteTime(){
         latest.validtime;
 
     els.satelliteTime.innerText =
-        "Satellite: " + formatUtcTimestamp(validTime);
+    "Satellite: " +
+    formatUtcTimestamp(validTime);
 
     document.querySelectorAll(".satellite-tile").forEach((tile) => {
         const x = tile.dataset.x;
@@ -297,6 +309,44 @@ async function loadSatelliteTime(){
         tile.src =
             `${JMA_URLS.satelliteTileBase}/${baseTime}/fd/${validTime}/SND/ETC/4/${x}/${y}.jpg`;
     });
+    
+    document.querySelectorAll(".satellite-overlay-coastline-tile").forEach((tile) => {
+        const x = tile.dataset.x;
+        const y = tile.dataset.y;
+
+        tile.src =
+            `${JMA_URLS.satelliteMapTileBase}/5/${x}/${y}.png`;
+    });
+
+    document.querySelectorAll(".satellite-overlay-cloud-tile").forEach((tile) => {
+        const x = tile.dataset.x;
+        const y = tile.dataset.y;
+
+        tile.src =
+            `${JMA_URLS.satelliteTileBase}/${baseTime}/fd/${validTime}/SND/ETC/5/${x}/${y}.jpg`;
+    });
+
+
+}
+
+function initSatelliteOverlayEvents(){
+
+    let enabled = true;
+
+    els.satelliteOverlayToggle.addEventListener("click", () => {
+
+        enabled = !enabled;
+
+        getElement("satellite-overlay-asas-image").style.display =
+            enabled ? "block" : "none";
+
+        els.satelliteOverlayToggle.innerText =
+            enabled
+                ? "WX ON"
+                : "WX OFF";
+
+    });
+
 }
 
 async function loadRadarTime(){
@@ -420,6 +470,7 @@ function initAppEvents(){
     initPreflightEvents();
     initModalEvents();
     updateWindyTitle();
+    initSatelliteOverlayEvents();
 
     appEventsInitialized = true;
 }

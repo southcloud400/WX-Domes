@@ -70,6 +70,12 @@ function openTimelineModal(img, timeline){
 }
 
 function enlargeImage(img){
+    getElement("modal-satellite-overlay-container").style.display =
+        "none";
+
+    els.modalImage.style.display =
+        "block";
+
     els.modalImage.src =
         img.src;
 
@@ -82,6 +88,42 @@ function enlargeImage(img){
         els.modalControl.style.display =
             "none";
     }
+
+    els.imageModal.classList.add("show");
+}
+
+function openSatelliteOverlayModal(){
+    getElement("modal-satellite-overlay-container").style.display =
+    "none";
+    
+
+    els.modalImage.style.display =
+        "none";
+
+    els.modalControl.style.display =
+        "none";
+
+    const container =
+        getElement("modal-satellite-overlay-container");
+
+    container.replaceChildren();
+
+    const sourceBox =
+        document.querySelector(".satellite-overlay-box");
+
+    if(!sourceBox){
+        return;
+    }
+
+    const clonedBox =
+        sourceBox.cloneNode(true);
+
+    clonedBox.classList.add("modal-satellite-overlay-box");
+
+    container.appendChild(clonedBox);
+
+    container.style.display =
+        "block";
 
     els.imageModal.classList.add("show");
 }
@@ -116,4 +158,13 @@ function initModalEvents(){
     els.modalCloseButton.addEventListener("click", () => {
         closeModal();
     });
+    const satelliteOverlayBox =
+        document.querySelector(".satellite-overlay-box");
+
+    if(satelliteOverlayBox){
+        satelliteOverlayBox.addEventListener("click", () => {
+            openSatelliteOverlayModal();
+        });
+    }
+
 }

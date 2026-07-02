@@ -186,47 +186,17 @@ Loading...
 
 <div class="grid">
 
-    <div class="panel">
-        <div class="panel-control">
-            <a
-            id="satellite-time"
-            href="https://www.jma.go.jp/bosai/map.html#5/34.5/137/&elem=strengthen&contents=himawari"
-            target="_blank">
-            </a>
+     <div class="panel">
+        
+         <div class="panel-control">
+            <label>ASAS</label>
         </div>
-      
-        <div class="asas-test-layer-box">
+        
+        <img
+            id="asas-image"
+            src=""
+            class="weather-image">
 
-            <img
-                id="asas-image"
-                src=""
-                class="weather-image">
-
-            <div id="asas-cloud-grid">
-
-                <img class="satellite-tile" data-x="12" data-y="4">
-                <img class="satellite-tile" data-x="13" data-y="4">
-                <img class="satellite-tile" data-x="14" data-y="4">
-                <img class="satellite-tile" data-x="15" data-y="4">
-
-                <img class="satellite-tile" data-x="12" data-y="5">
-                <img class="satellite-tile" data-x="13" data-y="5">
-                <img class="satellite-tile" data-x="14" data-y="5">
-                <img class="satellite-tile" data-x="15" data-y="5">
-
-                <img class="satellite-tile" data-x="12" data-y="6">
-                <img class="satellite-tile" data-x="13" data-y="6">
-                <img class="satellite-tile" data-x="14" data-y="6">
-                <img class="satellite-tile" data-x="15" data-y="6">
-
-                <img class="satellite-tile" data-x="12" data-y="7">
-                <img class="satellite-tile" data-x="13" data-y="7">
-                <img class="satellite-tile" data-x="14" data-y="7">
-                <img class="satellite-tile" data-x="15" data-y="7">
-
-            </div>
-
-        </div>
     </div>
 
     <div class="panel">
@@ -241,6 +211,68 @@ Loading...
             class="weather-image">
 
     </div>
+
+
+<div class="panel">
+
+    <div class="panel-control">
+
+        <span id="satellite-time">
+            Satellite Loading...
+        </span>
+
+        <button
+            id="satellite-overlay-toggle"
+            class="button-small">
+            WX ON
+        </button>
+
+    </div>
+
+    <div class="satellite-overlay-box">
+
+        <img
+            id="satellite-overlay-asas-image"
+            class="satellite-overlay-asas-image"
+            src="">
+
+        <div id="satellite-overlay-coastline-grid">
+            <img class="satellite-overlay-coastline-tile" data-x="26" data-y="11">
+            <img class="satellite-overlay-coastline-tile" data-x="27" data-y="11">
+            <img class="satellite-overlay-coastline-tile" data-x="28" data-y="11">
+            <img class="satellite-overlay-coastline-tile" data-x="29" data-y="11">
+
+            <img class="satellite-overlay-coastline-tile" data-x="26" data-y="12">
+            <img class="satellite-overlay-coastline-tile" data-x="27" data-y="12">
+            <img class="satellite-overlay-coastline-tile" data-x="28" data-y="12">
+            <img class="satellite-overlay-coastline-tile" data-x="29" data-y="12">
+
+            <img class="satellite-overlay-coastline-tile" data-x="26" data-y="13">
+            <img class="satellite-overlay-coastline-tile" data-x="27" data-y="13">
+            <img class="satellite-overlay-coastline-tile" data-x="28" data-y="13">
+            <img class="satellite-overlay-coastline-tile" data-x="29" data-y="13">
+        </div>
+
+        <div id="satellite-overlay-cloud-grid">
+            <img class="satellite-overlay-cloud-tile" data-x="26" data-y="11">
+            <img class="satellite-overlay-cloud-tile" data-x="27" data-y="11">
+            <img class="satellite-overlay-cloud-tile" data-x="28" data-y="11">
+            <img class="satellite-overlay-cloud-tile" data-x="29" data-y="11">
+
+            <img class="satellite-overlay-cloud-tile" data-x="26" data-y="12">
+            <img class="satellite-overlay-cloud-tile" data-x="27" data-y="12">
+            <img class="satellite-overlay-cloud-tile" data-x="28" data-y="12">
+            <img class="satellite-overlay-cloud-tile" data-x="29" data-y="12">
+
+            <img class="satellite-overlay-cloud-tile" data-x="26" data-y="13">
+            <img class="satellite-overlay-cloud-tile" data-x="27" data-y="13">
+            <img class="satellite-overlay-cloud-tile" data-x="28" data-y="13">
+            <img class="satellite-overlay-cloud-tile" data-x="29" data-y="13">
+        </div>
+
+    </div>
+
+</div>
     
     <div class="panel">
         <div class="panel-control">
@@ -317,18 +349,27 @@ Loading...
         <label for="maiji-height-select">高度：</label>
 
         <select id="maiji-height-select">
-            <option value="145">FL450</option> 
-            <option value="141">FL410</option> 
-            <option value="137">FL370</option> 
-            <option value="133">FL330</option> 
-            <option value="129">FL290</option> 
-            <option value="125">FL250</option> 
-            <option value="121">FL210</option> 
-            <option value="117">FL170</option> 
-            <option value="113">FL130</option> 
-            <option value="109">FL090</option> 
-            <option value="105">FL050</option> 
-            <option value="101">FL010</option>
+            <option value="145">FL450</option>
+            <option value="143">FL430</option>
+            <option value="141">FL410</option>
+            <option value="139">FL390</option>
+            <option value="137">FL370</option>
+            <option value="135">FL350</option>
+            <option value="133">FL330</option>
+            <option value="131">FL310</option>
+            <option value="129">FL290</option>
+            <option value="127">FL270</option>
+            <option value="125">FL250</option>
+            <option value="123">FL230</option>
+            <option value="121">FL210</option>
+            <option value="119">FL190</option>
+            <option value="117">FL170</option>
+            <option value="115">FL150</option>
+            <option value="113">FL130</option>
+            <option value="111">FL110</option>
+            <option value="109">FL090</option>
+            <option value="107">FL070</option>
+            <option value="105">FL050</option>
         </select>
     </div>
 
@@ -388,6 +429,8 @@ Loading...
         </button>
 
         <img id="modalImage">
+
+        <div id="modal-satellite-overlay-container"></div>
 
         <div id="maiji-modal-control" style="display:none;">
             <div id="maiji-modal-time"></div>
