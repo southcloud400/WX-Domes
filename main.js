@@ -836,21 +836,27 @@ async function loadMetairCslfmTest(){
     image.alt =
         "MetAir予報断面 取得中...";
 
+    const sectionSelect =
+    document.getElementById("metair-cslfm-section-select");
+
     const typeSelect =
-    document.getElementById("metair-cslfm-type-select");
+        document.getElementById("metair-cslfm-type-select");
+
+    const sectionCode =
+        sectionSelect.value;
 
     const isPotentialTemperature =
         typeSelect.value === "2299";
 
     const analysisCode =
         isPotentialTemperature
-            ? "WANLC299"
-            : "WANLC199";
+            ? `WANLC2${sectionCode}`
+            : `WANLC1${sectionCode}`;
 
     const forecastCode =
         isPotentialTemperature
-            ? "2299"
-            : "2199";
+            ? `22${sectionCode}`
+            : `21${sectionCode}`;
 
     const timeline =
         await buildMetairCombinedTimeline(
@@ -895,8 +901,15 @@ function initMetairCslfmTestEvents(){
         return;
     }
 
+    const sectionSelect =
+    document.getElementById("metair-cslfm-section-select");
+
     const hourSelect =
     document.getElementById("metair-cslfm-hour-select");
+
+    sectionSelect.addEventListener("change", () => {
+    loadMetairCslfmTest();
+    });
 
     typeSelect.addEventListener("change", () => {
         loadMetairCslfmTest();

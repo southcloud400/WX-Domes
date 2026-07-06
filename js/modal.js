@@ -41,6 +41,73 @@ function setModalTimelineItem(index){
         formatTimelineItemLabel(item);
 }
 
+async function reloadMetairModalTimelineBySection(){
+
+    const sectionSelect =
+        getElement("metair-modal-section-select");
+
+    const mainSectionSelect =
+        getElement("metair-cslfm-section-select");
+
+    const mainTypeSelect =
+    getElement("metair-cslfm-type-select");
+
+    const typeSelect =
+        getElement("metair-modal-type-select");
+
+    mainSectionSelect.value =
+        sectionSelect.value;
+
+    mainTypeSelect.value =
+        typeSelect.value;
+
+    const sectionCode =
+        sectionSelect.value;
+
+    const isPotentialTemperature =
+        typeSelect.value === "2299";
+
+    const analysisCode =
+        isPotentialTemperature
+            ? `WANLC2${sectionCode}`
+            : `WANLC1${sectionCode}`;
+
+    const forecastCode =
+        isPotentialTemperature
+            ? `22${sectionCode}`
+            : `21${sectionCode}`;
+
+    const timeline =
+        await buildMetairCombinedTimeline(
+            analysisCode,
+            forecastCode
+        );
+
+    appState.metair.cslfmTimeline =
+        timeline;
+
+    appState.modal.timeline =
+        timeline;
+
+    const latestAnalysisIndex =
+        timeline.findLastIndex(item =>
+            item.type === "analysis"
+        );
+
+    const index =
+        latestAnalysisIndex >= 0
+            ? latestAnalysisIndex
+            : timeline.length - 1;
+
+    els.modalSlider.max =
+        timeline.length - 1;
+
+    els.modalSlider.value =
+        index;
+
+    setModalTimelineItem(index);
+}
+
 function closeModal(){
 
     els.imageModal.classList.remove("show");
@@ -87,6 +154,9 @@ function enlargeImage(img){
     getElement("modal-satellite-overlay-container").style.display =
         "none";
 
+    getElement("metair-modal-control").style.display =
+    "none";
+
     els.modalImage.style.display =
         "block";
 
@@ -97,7 +167,12 @@ function enlargeImage(img){
         getTimelineForImage(img);
 
     if(timeline){
-        openTimelineModal(img, timeline);
+    openTimelineModal(img, timeline);
+
+    if(img.dataset.timeline === "metair-cslfm"){
+        getElement("metair-modal-control").style.display =
+            "block";
+    }
     }else{
         els.modalControl.style.display =
             "none";
@@ -230,5 +305,15 @@ function initModalEvents(){
             openSatelliteOverlayModal();
         });
     }
+
+    getElement("metair-modal-section-select")
+    .addEventListener("change", () => {
+        reloadMetairModalTimelineBySection();
+    });
+
+    getElement("metair-modal-type-select")
+    .addEventListener("change", () => {
+        reloadMetairModalTimelineBySection();
+    });
 
 }

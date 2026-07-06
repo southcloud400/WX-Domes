@@ -463,6 +463,31 @@ Loading...
     <div class="panel-control">
         <label>MetAir 予報断面 Test（与那国-稚内）</label>
 
+        <select id="metair-cslfm-section-select">
+            <option value="99">与那国-稚内</option>
+
+            <option value="01">福岡-釧路</option>
+            <option value="02">福岡-紋別</option>
+            <option value="03">東京-稚内</option>
+            <option value="04">東京-女満別</option>
+            <option value="05">福岡-東京</option>
+            <option value="06">鹿児島-東京</option>
+            <option value="07">石垣-東京</option>
+            <option value="08">与那国-高松</option>
+            <option value="09">与那国-福岡</option>
+
+            <option value="50">東経145.0度</option>
+            <option value="51">東経142.5度</option>
+            <option value="52">東経140.0度</option>
+            <option value="53">東経137.5度</option>
+            <option value="54">東経135.0度</option>
+            <option value="55">東経132.5度</option>
+            <option value="56">東経130.0度</option>
+            <option value="57">東経127.5度</option>
+            <option value="58">東経125.0度</option>
+            <option value="59">東経122.5度</option>
+        </select>
+
         <select id="metair-cslfm-type-select">
             <option value="2199">気温</option>
             <option value="2299">温位</option>
@@ -484,7 +509,7 @@ Loading...
         src=""
         class="weather-image"
         data-timeline="metair-cslfm">
-        
+
 </div>
 
 <div id="imageModal" class="modal">
@@ -499,26 +524,58 @@ Loading...
 
         <div id="modal-satellite-overlay-container"></div>
 
-        <div id="modal-cloudtop-index">
-            <div class="cloudtop-scale">
-                <div class="cloudtop-bar"></div>
+            <div id="modal-cloudtop-index">
+                <div class="cloudtop-scale">
+                    <div class="cloudtop-bar"></div>
 
-                <div class="cloudtop-labels">
-                    <span>48000</span>
-                    <span>42000</span>
-                    <span>36000</span>
-                    <span>30000</span>
-                    <span>24000</span>
-                    <span>18000</span>
-                    <span>12000</span>
-                    <span>6000</span>
-                    <span>0</span>
+                    <div class="cloudtop-labels">
+                        <span>48000</span>
+                        <span>42000</span>
+                        <span>36000</span>
+                        <span>30000</span>
+                        <span>24000</span>
+                        <span>18000</span>
+                        <span>12000</span>
+                        <span>6000</span>
+                        <span>0</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="cloudtop-unit">
-                高度（ft）
-            </div>
+                <div class="cloudtop-unit">
+                    高度（ft）
+                </div>
+        </div>
+
+        <div id="metair-modal-control" style="display:none;">
+            <select id="metair-modal-section-select">
+                <option value="99">与那国-稚内</option>
+
+                <option value="01">福岡-釧路</option>
+                <option value="02">福岡-紋別</option>
+                <option value="03">東京-稚内</option>
+                <option value="04">東京-女満別</option>
+                <option value="05">福岡-東京</option>
+                <option value="06">鹿児島-東京</option>
+                <option value="07">石垣-東京</option>
+                <option value="08">与那国-高松</option>
+                <option value="09">与那国-福岡</option>
+
+                <option value="50">東経145.0度</option>
+                <option value="51">東経142.5度</option>
+                <option value="52">東経140.0度</option>
+                <option value="53">東経137.5度</option>
+                <option value="54">東経135.0度</option>
+                <option value="55">東経132.5度</option>
+                <option value="56">東経130.0度</option>
+                <option value="57">東経127.5度</option>
+                <option value="58">東経125.0度</option>
+                <option value="59">東経122.5度</option>
+            </select>
+
+            <select id="metair-modal-type-select">
+                <option value="2199">気温</option>
+                <option value="2299">温位</option>
+            </select>
         </div>
 
         <div id="maiji-modal-control" style="display:none;">
