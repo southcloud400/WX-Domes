@@ -42,6 +42,10 @@ const DEFAULT_TILE_COORDINATES = [
 let appEventsInitialized = false;
 
 const appState = {
+     metair: {
+        enabled: false
+    },
+
     preflight: {
         enabled: false
     },
@@ -506,6 +510,127 @@ async function loadObservedLightning(latestTime){
     }
 }
 
+function initMetairLoginEvents(){
+
+    const panel =
+        document.getElementById("metair-login-panel");
+
+    const enableButton =
+        document.getElementById("metair-enable-button");
+
+    const skipButton =
+        document.getElementById("metair-skip-button");
+
+    if(!panel || !enableButton || !skipButton){
+        return;
+    }
+
+    enableButton.addEventListener("click", () => {
+        appState.metair.enabled = true;
+
+        panel.style.display = "none";
+
+        loadMetairAbjp();
+    });
+
+    skipButton.addEventListener("click", () => {
+        appState.metair.enabled = false;
+
+        panel.style.display = "none";
+    });
+}
+
+function buildMetairAbjpUrl(timestamp){
+
+    return (
+        "https://www3.metair.go.jp/pict/ABJP/" +
+        `QBMA98_RJTD_${timestamp}.png?` +
+        Date.now()
+    );
+}
+
+function createMetairAbjpCandidates(){
+
+    const now =
+        new Date();
+
+    const jst =
+        new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+    jst.setMinutes(0, 0, 0);
+
+    const validHoursJst =
+        [6, 9, 12, 15, 18, 21];
+
+    const candidates = [];
+
+    for(let dayBack = 0; dayBack < 3; dayBack++){
+
+        validHoursJst.forEach(hour => {
+
+            const candidateJst =
+                new Date(jst);
+
+            candidateJst.setDate(jst.getDate() - dayBack);
+            candidateJst.setHours(hour);
+
+            if(candidateJst > jst){
+                return;
+            }
+
+            const candidateUtc =
+                new Date(candidateJst.getTime() - 9 * 60 * 60 * 1000);
+
+            const timestamp =
+                formatTimestamp(candidateUtc).slice(0, 12) + "00";
+
+            candidates.push({
+                timestamp,
+                url: buildMetairAbjpUrl(timestamp)
+            });
+        });
+    }
+
+    return candidates.sort((a, b) =>
+        String(b.timestamp).localeCompare(String(a.timestamp))
+    );
+}
+
+async function loadMetairAbjp(){
+
+    if(!appState.metair.enabled){
+        return;
+    }
+
+    const image =
+        document.getElementById("metair-abjp-image");
+
+    if(!image){
+        return;
+    }
+
+    image.alt =
+        "MetAir ABJP 取得中...";
+
+    const latest =
+        await findFirstExistingImage(
+            createMetairAbjpCandidates()
+        );
+
+    if(!latest){
+        image.removeAttribute("src");
+        image.alt =
+            "MetAir ABJP が見つかりません";
+        return;
+    }
+
+    image.src =
+        latest.url;
+
+    image.alt =
+        `ABJP ${formatUtcTimestamp(latest.timestamp)}`;
+}
+
 function initAppEvents(){
     if(appEventsInitialized){
         return;
@@ -517,6 +642,7 @@ function initAppEvents(){
     initPreflightEvents();
     initModalEvents();
     updateWindyTitle();
+    initMetairLoginEvents();
     initSatelliteOverlayEvents();
 
     appEventsInitialized = true;

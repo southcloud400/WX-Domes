@@ -4,11 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flight Weather Dashboard</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20260706-satellite">
 
 </head>
 
 <body>
+
+    <div id="metair-login-panel" class="metair-login-panel">
+    <div class="metair-login-box">
+        <div class="metair-login-title">
+            MetAir資料を使用しますか？
+        </div>
+
+        <div class="metair-login-text">
+            MetAirにログイン済みの場合、MetAir由来の資料取得を試します。
+            使用しない場合は、従来通りの表示になります。
+        </div>
+
+        <div class="metair-login-buttons">
+            <button id="metair-enable-button">
+                MetAirを使う
+            </button>
+
+            <button id="metair-skip-button">
+                通常モード
+            </button>
+        </div>
+    </div>
+</div>
 
 <div class="header">
     <h2>WX Domes.</h2>
@@ -323,6 +346,17 @@ Loading...
         src=""
         class="weather-image"
         data-timeline="lightning">
+</div>
+
+<div class="panel">
+    <div class="panel-control">
+        <label>ABJP 悪天解析図 / MetAir Test</label>
+    </div>
+
+    <img
+        id="metair-abjp-image"
+        src=""
+        class="weather-image">
 </div>
 
 <div class="panel">
