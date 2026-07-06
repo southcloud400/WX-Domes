@@ -42,9 +42,12 @@ const DEFAULT_TILE_COORDINATES = [
 let appEventsInitialized = false;
 
 const appState = {
-     metair: {
-        enabled: false
+    
+    metair: {
+        enabled: false,
+        cslfmTimeline: []
     },
+
 
     preflight: {
         enabled: false
@@ -631,6 +634,161 @@ async function loadMetairAbjp(){
         `ABJP ${formatUtcTimestamp(latest.timestamp)}`;
 }
 
+async function findLatestMetairAnalysis(){
+
+    const now =
+        new Date();
+
+    now.setUTCMinutes(0, 0, 0);
+
+    for(let i = 0; i < 24; i++){
+
+        const candidate =
+            new Date(
+                now.getTime() -
+                i * 60 * 60 * 1000
+            );
+
+        const timestamp =
+            formatTimestamp(candidate)
+                .slice(0, 12) + "00";
+
+        const url =
+            "https://www3.metair.go.jp/pict/anl/multi/cs/" +
+            `WANLC199_RJTD_${timestamp}.PNG`;
+
+        if(await imageExists(url)){
+
+            return {
+                time: candidate,
+                timestamp,
+                url
+            };
+        }
+    }
+
+    return null;
+}
+
+async function buildMetairAnalysisTimeline(analysisCode = "WANLC199"){
+
+    const latest =
+        await findLatestMetairAnalysis();
+
+    if(!latest){
+        return [];
+    }
+
+    const candidates =
+        Array.from({ length: 7 }, (_, index) => {
+
+            const hoursBack =
+                6 - index;
+
+            const time =
+                new Date(
+                    latest.time.getTime() -
+                    hoursBack * 60 * 60 * 1000
+                );
+
+            const timestamp =
+                formatTimestamp(time).slice(0, 12) + "00";
+
+            return {
+                type: "analysis",
+                time,
+                timestamp,
+                label:
+                    `${formatUtcTimestamp(timestamp)} ANALYSIS`,
+                url:
+                    "https://www3.metair.go.jp/pict/anl/multi/cs/" +
+                    `${analysisCode}_RJTD_${timestamp}.PNG`
+            };
+        });
+
+    return filterExistingImages(candidates);
+}
+
+
+async function buildMetairForecastTimeline(forecastCode = "2199"){
+
+    const baseTime =
+        await findLatestMetairCslfmBaseTime();
+
+    if(!baseTime){
+        return [];
+    }
+
+    const baseDate =
+        new Date(
+            `${baseTime.slice(0,4)}-${baseTime.slice(4,6)}-${baseTime.slice(6,8)}T${baseTime.slice(8,10)}:${baseTime.slice(10,12)}:00Z`
+        );
+
+    const candidates =
+        Array.from({ length: 9 }, (_, index) => {
+
+            const forecastNumber =
+                String(index + 1).padStart(2, "0");
+
+            const validTime =
+                new Date(
+                    baseDate.getTime() +
+                    (index + 1) * 60 * 60 * 1000
+                );
+
+            const validTimestamp =
+                formatTimestamp(validTime).slice(0, 12) + "00";
+
+            return {
+                type: "forecast",
+                baseTime,
+                forecastNumber,
+                timestamp: validTimestamp,
+                label:
+                    `${formatUtcTimestamp(validTimestamp)} FORECAST`,
+                url:
+                    "https://www3.metair.go.jp/pict/anl/multi/cslfm/" +
+                    `WANLC${forecastCode}-${forecastNumber}_RJTD_${baseTime}.png`
+            };
+        });
+
+    return filterExistingImages(candidates);
+}
+
+async function buildMetairCombinedTimeline(
+    analysisCode = "WANLC199",
+    forecastCode = "2199"
+){
+
+    const analysisTimeline =
+        await buildMetairAnalysisTimeline(analysisCode);
+
+    const forecastTimeline =
+        await buildMetairForecastTimeline(forecastCode);
+
+    const latestAnalysis =
+        analysisTimeline[analysisTimeline.length - 1];
+
+    if(!latestAnalysis){
+        return forecastTimeline.slice(0, 6);
+    }
+
+    const filteredForecastTimeline =
+        forecastTimeline
+            .filter(item =>
+                String(item.timestamp) >
+                String(latestAnalysis.timestamp)
+            )
+            .slice(0, 6);
+
+    return [
+        ...analysisTimeline,
+        ...filteredForecastTimeline
+    ].sort((a, b) =>
+        String(a.timestamp).localeCompare(String(b.timestamp))
+    );
+}
+
 async function findLatestMetairCslfmBaseTime(){
 
     const now =
@@ -671,64 +829,62 @@ async function loadMetairCslfmTest(){
     const image =
         document.getElementById("metair-cslfm-image");
 
-    const typeSelect =
-        document.getElementById("metair-cslfm-type-select");
-
-    const hourSelect =
-        document.getElementById("metair-cslfm-hour-select");
-
-    if(!image || !typeSelect || !hourSelect){
+    if(!image){
         return;
     }
 
-    const baseTime =
-        await findLatestMetairCslfmBaseTime();
+    image.alt =
+        "MetAir予報断面 取得中...";
 
-    if(!baseTime){
+    const typeSelect =
+    document.getElementById("metair-cslfm-type-select");
+
+    const isPotentialTemperature =
+        typeSelect.value === "2299";
+
+    const analysisCode =
+        isPotentialTemperature
+            ? "WANLC299"
+            : "WANLC199";
+
+    const forecastCode =
+        isPotentialTemperature
+            ? "2299"
+            : "2199";
+
+    const timeline =
+        await buildMetairCombinedTimeline(
+            analysisCode,
+            forecastCode
+        );
+
+    appState.metair.cslfmTimeline =
+        timeline;
+
+    if(timeline.length === 0){
         image.removeAttribute("src");
         image.alt =
             "MetAir予報断面が見つかりません";
         return;
     }
 
-    const typeCode =
-        typeSelect.value;
+    const latestAnalysis =
+        [...timeline]
+            .reverse()
+            .find(item =>
+                item.type === "analysis"
+            );
 
-    const forecastHour =
-        hourSelect.value;
-
-    image.src =
-        "https://www3.metair.go.jp/pict/anl/multi/cslfm/" +
-        `WANLC${typeCode}-${forecastHour}_RJTD_${baseTime}.png?` +
-        Date.now();
-}
-
-function loadMetairCslfmTest(){
-
-    const image =
-        document.getElementById("metair-cslfm-image");
-
-    const typeSelect =
-        document.getElementById("metair-cslfm-type-select");
-
-    const hourSelect =
-        document.getElementById("metair-cslfm-hour-select");
-
-    if(!image || !typeSelect || !hourSelect){
-        return;
-    }
-
-    const typeCode =
-        typeSelect.value;
-
-    const forecastHour =
-        hourSelect.value;
+    const current =
+        latestAnalysis || timeline[timeline.length - 1];
 
     image.src =
-        "https://www3.metair.go.jp/pict/anl/multi/cslfm/" +
-        `WANLC${typeCode}-${forecastHour}_RJTD_20260706060000.png?` +
-        Date.now();
+        current.url + "?" + Date.now();
+
+    image.alt =
+        current.label;
 }
+
 
 function initMetairCslfmTestEvents(){
 
@@ -774,6 +930,14 @@ function initAppEvents(){
 async function initializeApp(){
 
     initAppEvents();
+
+    buildMetairCombinedTimeline()
+    .then(result => {
+        console.log(
+            "MetAir Combined Timeline:",
+            result
+        );
+    });
 
     await Promise.allSettled([
         runStartupTask("Lightning", loadLightningImage),

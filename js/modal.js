@@ -11,6 +11,10 @@ function getTimelineForImage(img){
         return appState.lightning.timeline;
     }
 
+    if(img.dataset.timeline === "metair-cslfm"){
+    return appState.metair.cslfmTimeline;
+    }
+
     return null;
 }
 
