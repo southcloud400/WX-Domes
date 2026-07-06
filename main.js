@@ -631,6 +631,128 @@ async function loadMetairAbjp(){
         `ABJP ${formatUtcTimestamp(latest.timestamp)}`;
 }
 
+async function findLatestMetairCslfmBaseTime(){
+
+    const now =
+        new Date();
+
+    now.setUTCMinutes(0, 0, 0);
+
+    const currentHour =
+        now.getUTCHours();
+
+    const baseHour =
+        currentHour - (currentHour % 3);
+
+    now.setUTCHours(baseHour);
+
+    for(let i = 0; i < 8; i++){
+
+        const candidate =
+            new Date(now.getTime() - i * 3 * 60 * 60 * 1000);
+
+        const timestamp =
+            formatTimestamp(candidate).slice(0, 12) + "00";
+
+        const testUrl =
+            "https://www3.metair.go.jp/pict/anl/multi/cslfm/" +
+            `WANLC2199-04_RJTD_${timestamp}.png`;
+
+        if(await imageExists(testUrl)){
+            return timestamp;
+        }
+    }
+
+    return null;
+}
+
+async function loadMetairCslfmTest(){
+
+    const image =
+        document.getElementById("metair-cslfm-image");
+
+    const typeSelect =
+        document.getElementById("metair-cslfm-type-select");
+
+    const hourSelect =
+        document.getElementById("metair-cslfm-hour-select");
+
+    if(!image || !typeSelect || !hourSelect){
+        return;
+    }
+
+    const baseTime =
+        await findLatestMetairCslfmBaseTime();
+
+    if(!baseTime){
+        image.removeAttribute("src");
+        image.alt =
+            "MetAir予報断面が見つかりません";
+        return;
+    }
+
+    const typeCode =
+        typeSelect.value;
+
+    const forecastHour =
+        hourSelect.value;
+
+    image.src =
+        "https://www3.metair.go.jp/pict/anl/multi/cslfm/" +
+        `WANLC${typeCode}-${forecastHour}_RJTD_${baseTime}.png?` +
+        Date.now();
+}
+
+function loadMetairCslfmTest(){
+
+    const image =
+        document.getElementById("metair-cslfm-image");
+
+    const typeSelect =
+        document.getElementById("metair-cslfm-type-select");
+
+    const hourSelect =
+        document.getElementById("metair-cslfm-hour-select");
+
+    if(!image || !typeSelect || !hourSelect){
+        return;
+    }
+
+    const typeCode =
+        typeSelect.value;
+
+    const forecastHour =
+        hourSelect.value;
+
+    image.src =
+        "https://www3.metair.go.jp/pict/anl/multi/cslfm/" +
+        `WANLC${typeCode}-${forecastHour}_RJTD_20260706060000.png?` +
+        Date.now();
+}
+
+function initMetairCslfmTestEvents(){
+
+    const typeSelect =
+        document.getElementById("metair-cslfm-type-select");
+
+    if(!typeSelect){
+        return;
+    }
+
+    const hourSelect =
+    document.getElementById("metair-cslfm-hour-select");
+
+    typeSelect.addEventListener("change", () => {
+        loadMetairCslfmTest();
+    });
+
+    hourSelect.addEventListener("change", () => {
+        loadMetairCslfmTest();
+    });
+
+    loadMetairCslfmTest();
+}
+
 function initAppEvents(){
     if(appEventsInitialized){
         return;
@@ -644,6 +766,7 @@ function initAppEvents(){
     updateWindyTitle();
     initMetairLoginEvents();
     initSatelliteOverlayEvents();
+    initMetairCslfmTestEvents();
 
     appEventsInitialized = true;
 }
