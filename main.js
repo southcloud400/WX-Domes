@@ -959,6 +959,221 @@ async function loadMetairCslfmTest(){
         current.label;
 }
 
+async function loadMetairFlatTest(){
+
+    const image =
+        document.getElementById("metair-flat-image");
+
+    const heightSelect =
+        document.getElementById("metair-flat-height-select");
+
+    if(!image || !heightSelect){
+        return;
+    }
+
+    image.alt =
+        "MetAir平面図 取得中...";
+
+    const heightCode =
+        heightSelect.value;
+
+    const timeline =
+        await buildMetairFlatCombinedTimeline(
+            heightCode
+        );
+
+    appState.metair.flatTimeline =
+        timeline;
+
+    if(timeline.length === 0){
+        image.removeAttribute("src");
+        image.alt =
+            "MetAir平面図が見つかりません";
+        return;
+    }
+
+    const latestAnalysis =
+        [...timeline]
+            .reverse()
+            .find(item =>
+                item.type === "analysis"
+            );
+
+    const current =
+        latestAnalysis || timeline[timeline.length - 1];
+
+    image.src =
+        current.url + "?" + Date.now();
+
+    image.alt =
+        current.label;
+}
+
+async function findLatestMetairFlatAnalysis(heightCode){
+
+    const now =
+        new Date();
+
+    now.setUTCMinutes(0, 0, 0);
+
+    for(let i = 0; i < 24; i++){
+
+        const candidate =
+            new Date(
+                now.getTime() -
+                i * 60 * 60 * 1000
+            );
+
+        const timestamp =
+            formatTimestamp(candidate).slice(0, 12) + "00";
+
+        const url =
+            "https://www3.metair.go.jp/pict/anl/multi/fl/" +
+            `WANLF${heightCode}_RJTD_${timestamp}.PNG`;
+
+        if(await imageExists(url)){
+            return {
+                time: candidate,
+                timestamp,
+                url
+            };
+        }
+    }
+
+    return null;
+}
+
+async function buildMetairFlatAnalysisTimeline(heightCode){
+
+    const latest =
+        await findLatestMetairFlatAnalysis(heightCode);
+
+    if(!latest){
+        return [];
+    }
+
+    const candidates =
+        Array.from({ length: 7 }, (_, index) => {
+
+            const hoursBack =
+                6 - index;
+
+            const time =
+                new Date(
+                    latest.time.getTime() -
+                    hoursBack * 60 * 60 * 1000
+                );
+
+            const timestamp =
+                formatTimestamp(time).slice(0, 12) + "00";
+
+            return {
+                type: "analysis",
+                time,
+                timestamp,
+                label:
+                    `${formatUtcTimestamp(timestamp)} ANALYSIS`,
+                url:
+                    "https://www3.metair.go.jp/pict/anl/multi/fl/" +
+                    `WANLF${heightCode}_RJTD_${timestamp}.PNG`
+            };
+        });
+
+    return filterExistingImages(candidates);
+}
+
+async function buildMetairFlatForecastTimeline(heightCode){
+
+    const baseTime =
+        await findLatestMetairCslfmBaseTime();
+
+    if(!baseTime){
+        return [];
+    }
+
+    const baseDate =
+        new Date(
+            `${baseTime.slice(0,4)}-${baseTime.slice(4,6)}-${baseTime.slice(6,8)}T${baseTime.slice(8,10)}:${baseTime.slice(10,12)}:00Z`
+        );
+
+    const candidates =
+        Array.from({ length: 9 }, (_, index) => {
+
+            const forecastNumber =
+                String(index + 1).padStart(2, "0");
+
+            const validTime =
+                new Date(
+                    baseDate.getTime() +
+                    (index + 1) * 60 * 60 * 1000
+                );
+
+            const timestamp =
+                formatTimestamp(validTime).slice(0, 12) + "00";
+
+            return {
+                type: "forecast",
+                baseTime,
+                forecastNumber,
+                timestamp,
+                label:
+                    `${formatUtcTimestamp(timestamp)} FORECAST`,
+                url:
+                    "https://www3.metair.go.jp/pict/anl/multi/fllfm/" +
+                    `WANLF2${heightCode}-${forecastNumber}_RJTD_${baseTime}.png`
+            };
+        });
+
+    return filterExistingImages(candidates);
+}
+
+async function buildMetairFlatCombinedTimeline(heightCode){
+
+    const analysisTimeline =
+        await buildMetairFlatAnalysisTimeline(heightCode);
+
+    const forecastTimeline =
+        await buildMetairFlatForecastTimeline(heightCode);
+
+    const latestAnalysis =
+        analysisTimeline[analysisTimeline.length - 1];
+
+    if(!latestAnalysis){
+        return forecastTimeline.slice(0, 6);
+    }
+
+    const filteredForecastTimeline =
+        forecastTimeline
+            .filter(item =>
+                String(item.timestamp) >
+                String(latestAnalysis.timestamp)
+            )
+            .slice(0, 6);
+
+    return [
+        ...analysisTimeline,
+        ...filteredForecastTimeline
+    ].sort((a, b) =>
+        String(a.timestamp).localeCompare(String(b.timestamp))
+    );
+}
+
+function initMetairFlatTestEvents(){
+
+    const heightSelect =
+        document.getElementById("metair-flat-height-select");
+
+    if(!heightSelect){
+        return;
+    }
+
+    heightSelect.addEventListener("change", () => {
+        loadMetairFlatTest();
+    });
+
+    loadMetairFlatTest();
+}
+
 
 function initMetairCslfmTestEvents(){
 
@@ -1011,6 +1226,7 @@ function initAppEvents(){
     initMetairLoginEvents();
     initSatelliteOverlayEvents();
     initMetairCslfmTestEvents();
+    initMetairFlatTestEvents();
 
     appEventsInitialized = true;
 }

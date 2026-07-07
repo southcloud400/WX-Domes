@@ -15,6 +15,10 @@ function getTimelineForImage(img){
     return appState.metair.cslfmTimeline;
     }
 
+    if(img.dataset.timeline === "metair-flat"){
+    return appState.metair.flatTimeline;
+    }
+
     return null;
 }
 
@@ -144,6 +148,50 @@ async function reloadMetairModalTimelineBySection(){
     setModalTimelineItem(index);
 }
 
+async function reloadMetairFlatModalTimelineByHeight(){
+
+    const modalHeightSelect =
+        getElement("metair-modal-height-select");
+
+    const mainHeightSelect =
+        getElement("metair-flat-height-select");
+
+    const heightCode =
+        modalHeightSelect.value;
+
+    mainHeightSelect.value =
+        heightCode;
+
+    const timeline =
+        await buildMetairFlatCombinedTimeline(
+            heightCode
+        );
+
+    appState.metair.flatTimeline =
+        timeline;
+
+    appState.modal.timeline =
+        timeline;
+
+    const latestAnalysisIndex =
+        timeline.findLastIndex(item =>
+            item.type === "analysis"
+        );
+
+    const index =
+        latestAnalysisIndex >= 0
+            ? latestAnalysisIndex
+            : timeline.length - 1;
+
+    els.modalSlider.max =
+        timeline.length - 1;
+
+    els.modalSlider.value =
+        index;
+
+    setModalTimelineItem(index);
+}
+
 function closeModal(){
 
     els.imageModal.classList.remove("show");
@@ -168,11 +216,22 @@ function openTimelineModal(img, timeline){
         return;
     }
 
-    const currentIndex =
-        Math.max(
-            0,
-            timeline.findIndex(item => item.url === img.src)
-        );
+    let currentIndex =
+    timeline.findIndex(item =>
+        img.src.startsWith(item.url)
+    );
+
+    if(currentIndex < 0){
+        currentIndex =
+            timeline.findLastIndex(item =>
+                item.type === "analysis"
+            );
+    }
+
+    if(currentIndex < 0){
+        currentIndex =
+            timeline.length - 1;
+    }
 
     els.modalControl.style.display =
         "block";
@@ -193,6 +252,9 @@ function enlargeImage(img){
     getElement("metair-modal-control").style.display =
     "none";
 
+    getElement("metair-modal-height-select").style.display =
+    "none";
+
     els.modalImage.style.display =
         "block";
 
@@ -206,9 +268,44 @@ function enlargeImage(img){
     openTimelineModal(img, timeline);
 
     if(img.dataset.timeline === "metair-cslfm"){
-        getElement("metair-modal-control").style.display =
-            "block";
+
+    getElement("metair-modal-control").style.display =
+        "block";
+
+    getElement("metair-modal-section-select").style.display =
+        "inline-block";
+
+    getElement("metair-modal-type-select").style.display =
+        "inline-block";
+
+    getElement("metair-modal-echo-select").style.display =
+        "inline-block";
     }
+    
+    if(img.dataset.timeline === "metair-flat"){
+
+    getElement("metair-modal-control").style.display =
+        "block";
+
+    getElement("metair-modal-section-select").style.display =
+        "none";
+
+    getElement("metair-modal-type-select").style.display =
+        "none";
+
+    getElement("metair-modal-echo-select").style.display =
+        "none";
+
+    const heightSelect =
+        getElement("metair-modal-height-select");
+
+    heightSelect.style.display =
+        "inline-block";
+
+    heightSelect.value =
+        getElement("metair-flat-height-select").value;
+    }
+
     }else{
         els.modalControl.style.display =
             "none";
@@ -357,6 +454,11 @@ function initModalEvents(){
         setModalTimelineItem(
             Number(els.modalSlider.value)
         );
+    });
+
+    getElement("metair-modal-height-select")
+    .addEventListener("change", () => {
+        reloadMetairFlatModalTimelineByHeight();
     });
 
 }
