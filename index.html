@@ -17,17 +17,16 @@
         </div>
 
         <div class="metair-login-text">
-            MetAirにログイン済みの場合、MetAir由来の資料取得を試します。
-            使用しない場合は、従来通りの表示になります。
+            NOを選択した場合公開データのみを使用します。
         </div>
 
         <div class="metair-login-buttons">
             <button id="metair-enable-button">
-                MetAirを使う
+                YES
             </button>
 
             <button id="metair-skip-button">
-                通常モード
+                NO
             </button>
         </div>
     </div>
@@ -350,7 +349,7 @@ Loading...
 
 <div class="panel">
     <div class="panel-control">
-        <label>ABJP 悪天解析図 / MetAir Test</label>
+        <label>ABJP</label>
     </div>
 
     <img
@@ -384,7 +383,7 @@ Loading...
             class="weather-image">
     </div>
 
-<div class="panel">
+<div class="panel jma-maiji-panel">
 
     <div class="panel-control">
         <label for="maiji-height-select">高度：</label>
@@ -422,7 +421,7 @@ Loading...
 
 </div>
 
-<div class="panel">
+<div class="panel jma-maiji-panel">
 
     <div class="panel-control">
         <label for="maiji-section-select">断面：</label>
@@ -459,9 +458,9 @@ Loading...
 
 </div>
 
-<div class="panel">
+<div class="panel metair-maiji-panel">
     <div class="panel-control">
-        <label>MetAir 予報断面 Test（与那国-稚内）</label>
+        <label>毎時大気解析（断面）</label>
 
         <select id="metair-cslfm-section-select">
             <option value="99">与那国-稚内</option>
@@ -488,25 +487,23 @@ Loading...
             <option value="59">東経122.5度</option>
         </select>
 
-        <select id="metair-cslfm-type-select">
-            <option value="2199">気温</option>
-            <option value="2299">温位</option>
-        </select>
+        <label>
+            <input
+                type="radio"
+                name="metair-cslfm-type"
+                value="2199"
+                checked>
+            気温
+        </label>
 
-        <select id="metair-cslfm-echo-select">
-            <option value="off" selected>Echo OFF</option>
-            <option value="on">Echo ON</option>
-        </select>
+        <label>
+            <input
+                type="radio"
+                name="metair-cslfm-type"
+                value="2299">
+            温位
+        </label>
 
-        <select id="metair-cslfm-hour-select">
-            <option value="03">+3</option>
-            <option value="04">+4</option>
-            <option value="05">+5</option>
-            <option value="06">+6</option>
-            <option value="07">+7</option>
-            <option value="08">+8</option>
-            <option value="09">+9</option>
-        </select>
     </div>
 
     <img
@@ -517,9 +514,9 @@ Loading...
 
 </div>
 
-<div class="panel">
+<div class="panel metair-maiji-panel">
     <div class="panel-control">
-        <label>MetAir 平面図 Test</label>
+        <label>毎時大気解析（平面）</label>
 
         <select id="metair-flat-height-select">
             <option value="145">FL450</option>

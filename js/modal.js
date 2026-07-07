@@ -89,17 +89,21 @@ async function reloadMetairModalTimelineBySection(){
     const mainSectionSelect =
         getElement("metair-cslfm-section-select");
 
-    const mainTypeSelect =
-    getElement("metair-cslfm-type-select");
-
     const typeSelect =
         getElement("metair-modal-type-select");
 
     mainSectionSelect.value =
         sectionSelect.value;
 
-    mainTypeSelect.value =
-        typeSelect.value;
+    const mainTypeRadio =
+        document.querySelector(
+            `input[name="metair-cslfm-type"][value="${typeSelect.value}"]`
+        );
+
+    if(mainTypeRadio){
+        mainTypeRadio.checked =
+            true;
+    }
 
     const sectionCode =
         sectionSelect.value;
@@ -221,17 +225,17 @@ function openTimelineModal(img, timeline){
         img.src.startsWith(item.url)
     );
 
-    if(currentIndex < 0){
-        currentIndex =
-            timeline.findLastIndex(item =>
-                item.type === "analysis"
-            );
-    }
+if(currentIndex < 0){
+    currentIndex =
+        timeline.findLastIndex(item =>
+            item.type === "analysis"
+        );
+}
 
-    if(currentIndex < 0){
-        currentIndex =
-            timeline.length - 1;
-    }
+if(currentIndex < 0){
+    currentIndex =
+        timeline.length - 1;
+}
 
     els.modalControl.style.display =
         "block";

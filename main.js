@@ -513,6 +513,19 @@ async function loadObservedLightning(latestTime){
     }
 }
 
+function updateMetairDisplayMode(){
+
+    document.body.classList.toggle(
+        "metair-mode",
+        appState.metair.enabled
+    );
+
+    document.body.classList.toggle(
+        "degrade-mode",
+        !appState.metair.enabled
+    );
+}
+
 function initMetairLoginEvents(){
 
     const panel =
@@ -531,16 +544,21 @@ function initMetairLoginEvents(){
     enableButton.addEventListener("click", () => {
         appState.metair.enabled = true;
 
+        updateMetairDisplayMode();
+
         panel.style.display = "none";
 
         loadMetairAbjp();
     });
 
     skipButton.addEventListener("click", () => {
-        appState.metair.enabled = false;
+    appState.metair.enabled = false;
 
-        panel.style.display = "none";
+    updateMetairDisplayMode();
+
+    panel.style.display = "none";
     });
+
 }
 
 function buildMetairAbjpUrl(timestamp){
@@ -824,6 +842,17 @@ async function findLatestMetairCslfmBaseTime(){
     return null;
 }
 
+function getMetairCslfmTypeValue(){
+    const checked =
+        document.querySelector(
+            'input[name="metair-cslfm-type"]:checked'
+        );
+
+    return checked
+        ? checked.value
+        : "2199";
+}
+
 async function loadMetairCslfmTest(){
 
     const image =
@@ -839,17 +868,17 @@ async function loadMetairCslfmTest(){
     const sectionSelect =
         document.getElementById("metair-cslfm-section-select");
 
-    const typeSelect =
-        document.getElementById("metair-cslfm-type-select");
-
     const echoSelect =
         document.getElementById("metair-cslfm-echo-select");
 
     const sectionCode =
         sectionSelect.value;
 
+    const typeValue =
+    getMetairCslfmTypeValue();
+
     const isPotentialTemperature =
-        typeSelect.value === "2299";
+        typeValue === "2299";
 
     const analysisCode =
         isPotentialTemperature
@@ -1177,37 +1206,24 @@ function initMetairFlatTestEvents(){
 
 function initMetairCslfmTestEvents(){
 
-    const typeSelect =
-        document.getElementById("metair-cslfm-type-select");
+    const sectionSelect =
+        document.getElementById("metair-cslfm-section-select");
 
-    if(!typeSelect){
+    if(!sectionSelect){
         return;
     }
 
-    const sectionSelect =
-    document.getElementById("metair-cslfm-section-select");
-
-    const hourSelect =
-    document.getElementById("metair-cslfm-hour-select");
-
-    const echoSelect =
-    document.getElementById("metair-cslfm-echo-select");
-
     sectionSelect.addEventListener("change", () => {
-    loadMetairCslfmTest();
-    });
-
-    typeSelect.addEventListener("change", () => {
         loadMetairCslfmTest();
     });
 
-    hourSelect.addEventListener("change", () => {
-        loadMetairCslfmTest();
-    });
-
-    echoSelect.addEventListener("change", () => {
-    loadMetairCslfmTest();
-    });
+    document
+        .querySelectorAll('input[name="metair-cslfm-type"]')
+        .forEach(radio => {
+            radio.addEventListener("change", () => {
+                loadMetairCslfmTest();
+            });
+        });
 
     loadMetairCslfmTest();
 }
@@ -1234,14 +1250,6 @@ function initAppEvents(){
 async function initializeApp(){
 
     initAppEvents();
-
-    buildMetairCombinedTimeline()
-    .then(result => {
-        console.log(
-            "MetAir Combined Timeline:",
-            result
-        );
-    });
 
     await Promise.allSettled([
         runStartupTask("Lightning", loadLightningImage),

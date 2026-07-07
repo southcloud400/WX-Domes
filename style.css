@@ -674,3 +674,11 @@ body.preflight-on .preflight-panel{
 
     transform:translateY(-3.5%);
 }
+
+body.metair-mode .jma-maiji-panel{
+    display:none;
+}
+
+body.degrade-mode .metair-maiji-panel{
+    display:none;
+}
