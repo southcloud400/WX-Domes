@@ -837,10 +837,13 @@ async function loadMetairCslfmTest(){
         "MetAir予報断面 取得中...";
 
     const sectionSelect =
-    document.getElementById("metair-cslfm-section-select");
+        document.getElementById("metair-cslfm-section-select");
 
     const typeSelect =
         document.getElementById("metair-cslfm-type-select");
+
+    const echoSelect =
+        document.getElementById("metair-cslfm-echo-select");
 
     const sectionCode =
         sectionSelect.value;
@@ -857,6 +860,71 @@ async function loadMetairCslfmTest(){
         isPotentialTemperature
             ? `22${sectionCode}`
             : `21${sectionCode}`;
+
+    if(echoSelect && echoSelect.value === "on"){
+    const latest =
+        await findLatestMetairAnalysis();
+
+    if(!latest){
+        image.removeAttribute("src");
+        image.alt =
+            "MetAir Echo が見つかりません";
+        return;
+    }
+
+    const echoCode =
+        `WANLCE${sectionCode}`;
+
+    const echoCandidates =
+        Array.from({ length: 7 }, (_, index) => {
+            const hoursBack =
+                6 - index;
+
+            const time =
+                new Date(
+                    latest.time.getTime() -
+                    hoursBack * 60 * 60 * 1000
+                );
+
+            const timestamp =
+                formatTimestamp(time).slice(0, 12) + "00";
+
+            return {
+                type: "analysis",
+                time,
+                timestamp,
+                label:
+                    `${formatUtcTimestamp(timestamp)} ECHO`,
+                url:
+                    "https://www3.metair.go.jp/pict/anl/multi/cs/" +
+                    `${echoCode}_RJTD_${timestamp}.png`
+            };
+        });
+
+    const echoTimeline =
+        await filterExistingImages(echoCandidates);
+
+    appState.metair.cslfmTimeline =
+        echoTimeline;
+
+    if(echoTimeline.length === 0){
+        image.removeAttribute("src");
+        image.alt =
+            "MetAir Echo が見つかりません";
+        return;
+    }
+
+    const current =
+        echoTimeline[echoTimeline.length - 1];
+
+    image.src =
+        current.url + "?" + Date.now();
+
+    image.alt =
+        current.label;
+
+    return;
+    }
 
     const timeline =
         await buildMetairCombinedTimeline(
@@ -907,6 +975,9 @@ function initMetairCslfmTestEvents(){
     const hourSelect =
     document.getElementById("metair-cslfm-hour-select");
 
+    const echoSelect =
+    document.getElementById("metair-cslfm-echo-select");
+
     sectionSelect.addEventListener("change", () => {
     loadMetairCslfmTest();
     });
@@ -917,6 +988,10 @@ function initMetairCslfmTestEvents(){
 
     hourSelect.addEventListener("change", () => {
         loadMetairCslfmTest();
+    });
+
+    echoSelect.addEventListener("change", () => {
+    loadMetairCslfmTest();
     });
 
     loadMetairCslfmTest();

@@ -39,6 +39,42 @@ function setModalTimelineItem(index){
 
     els.modalTime.innerText =
         formatTimelineItemLabel(item);
+
+    updateMetairModalEcho(item);
+
+}
+
+function updateMetairModalEcho(item){
+
+    const echoImage =
+        getElement("metair-modal-echo-image");
+
+    const echoSelect =
+        getElement("metair-modal-echo-select");
+
+    if(
+        !item ||
+        item.type !== "analysis" ||
+        echoSelect.value !== "on"
+    ){
+        echoImage.style.display =
+            "none";
+
+        echoImage.removeAttribute("src");
+
+        return;
+    }
+
+    const sectionCode =
+        getElement("metair-modal-section-select").value;
+
+    echoImage.src =
+        "https://www3.metair.go.jp/pict/anl/multi/cs/" +
+        `WANLCE${sectionCode}_RJTD_${item.timestamp}.png?` +
+        Date.now();
+
+    echoImage.style.display =
+        "block";
 }
 
 async function reloadMetairModalTimelineBySection(){
@@ -314,6 +350,13 @@ function initModalEvents(){
     getElement("metair-modal-type-select")
     .addEventListener("change", () => {
         reloadMetairModalTimelineBySection();
+    });
+
+    getElement("metair-modal-echo-select")
+    .addEventListener("change", () => {
+        setModalTimelineItem(
+            Number(els.modalSlider.value)
+        );
     });
 
 }

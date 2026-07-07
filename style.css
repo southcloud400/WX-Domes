@@ -657,3 +657,20 @@ body.preflight-on .preflight-panel{
     font-size:13px;
     padding:4px;
 }
+
+.metair-modal-echo-image{
+    display:none;
+
+    position:absolute;
+
+    width:100%;
+    height:90%;
+
+    object-fit:contain;
+
+    pointer-events:none;
+
+    z-index:2;
+
+    transform:translateY(-3.5%);
+}
