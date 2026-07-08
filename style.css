@@ -334,8 +334,8 @@ body.preflight-on .preflight-panel{
     position:absolute;
     inset:0;
     display:grid;
-    grid-template-columns:repeat(4, 25%);
-    grid-template-rows:repeat(3, 33.3333%);
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    grid-template-rows:repeat(3, minmax(0, 1fr));
     pointer-events:none;
 }
 

@@ -549,6 +549,9 @@ function initMetairLoginEvents(){
         panel.style.display = "none";
 
         loadMetairAbjp();
+
+        loadMetairWindProfilerTest();
+
     });
 
     skipButton.addEventListener("click", () => {
@@ -615,6 +618,80 @@ function createMetairAbjpCandidates(){
     return candidates.sort((a, b) =>
         String(b.timestamp).localeCompare(String(a.timestamp))
     );
+}
+
+function buildMetairWindProfilerUrl(stationCode, timestamp){
+
+    return (
+        "https://www3.metair.go.jp/pict/windp/spectrum/" +
+        `WINDCS_${stationCode}_${timestamp}.png?` +
+        Date.now()
+    );
+}
+
+function createMetairWindProfilerCandidates(stationCode){
+
+    const now =
+        new Date();
+
+    now.setUTCMinutes(
+        Math.floor(now.getUTCMinutes() / 10) * 10,
+        0,
+        0
+    );
+
+    return Array.from({ length: 72 }, (_, index) => {
+
+        const time =
+            new Date(now.getTime() - index * 10 * 60 * 1000);
+
+        const timestamp =
+            formatTimestamp(time).slice(0, 12) + "00";
+
+        return {
+            timestamp,
+            url: buildMetairWindProfilerUrl(stationCode, timestamp)
+        };
+    });
+}
+
+async function loadMetairWindProfilerTest(){
+
+    if(!appState.metair.enabled){
+        return;
+    }
+
+    const image =
+        document.getElementById("metair-wind-profiler-image");
+
+    if(!image){
+        return;
+    }
+
+    image.alt =
+        "Wind Profiler 取得中...";
+
+    const latest =
+        await findFirstExistingImage(
+            createMetairWindProfilerCandidates(
+                document.getElementById(
+                    "metair-wind-profiler-station-select"
+                ).value
+            )
+        );
+
+    if(!latest){
+        image.removeAttribute("src");
+        image.alt =
+            "Wind Profiler が見つかりません";
+        return;
+    }
+
+    image.src =
+        latest.url;
+
+    image.alt =
+        `Wind Profiler ${formatUtcTimestamp(latest.timestamp)}`;
 }
 
 async function loadMetairAbjp(){
@@ -1228,6 +1305,22 @@ function initMetairCslfmTestEvents(){
     loadMetairCslfmTest();
 }
 
+function initMetairWindProfilerTestEvents(){
+
+    const stationSelect =
+        document.getElementById(
+            "metair-wind-profiler-station-select"
+        );
+
+    if(!stationSelect){
+        return;
+    }
+
+    stationSelect.addEventListener("change", () => {
+        loadMetairWindProfilerTest();
+    });
+}
+
 function initAppEvents(){
     if(appEventsInitialized){
         return;
@@ -1243,6 +1336,7 @@ function initAppEvents(){
     initSatelliteOverlayEvents();
     initMetairCslfmTestEvents();
     initMetairFlatTestEvents();
+    initMetairWindProfilerTestEvents();
 
     appEventsInitialized = true;
 }
