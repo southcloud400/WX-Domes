@@ -682,3 +682,61 @@ body.metair-mode .jma-maiji-panel{
 body.degrade-mode .metair-maiji-panel{
     display:none;
 }
+
+@media (pointer:coarse){
+    #maiji-modal-control{
+        width:94%;
+        margin-top:12px;
+    }
+
+    #maiji-modal-slider{
+        height:22px;
+        border-radius:11px;
+    }
+
+    #maiji-modal-slider::-webkit-slider-thumb{
+        width:34px;
+        height:44px;
+        border-radius:6px;
+    }
+
+    #maiji-modal-time{
+        font-size:18px;
+        margin-bottom:10px;
+    }
+}
+
+@media (pointer:coarse){
+
+    #metair-modal-control{
+        top:60px;
+        right:24px;
+
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+
+        padding:10px 12px;
+
+        font-size:16px;
+    }
+
+    #metair-modal-control select{
+        min-height:40px;
+        font-size:16px;
+    }
+
+    #metair-modal-control label{
+        display:flex;
+        align-items:center;
+        min-height:36px;
+    }
+
+    #metair-modal-control input{
+        width:20px;
+        height:20px;
+        margin-right:8px;
+    }
+
+}

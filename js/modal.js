@@ -53,15 +53,16 @@ function updateMetairModalEcho(item){
     const echoImage =
         getElement("metair-modal-echo-image");
 
-    const echoSelect =
-        getElement("metair-modal-echo-select");
+    const echoCheckbox =
+        getElement("metair-modal-echo-checkbox");
 
     if(
+        appState.modal.type !== "metair-cslfm" ||
         !item ||
         item.type !== "analysis" ||
-        echoSelect.value !== "on"
+        !echoCheckbox.checked
     ){
-        echoImage.style.display =
+            echoImage.style.display =
             "none";
 
         echoImage.removeAttribute("src");
@@ -89,15 +90,21 @@ async function reloadMetairModalTimelineBySection(){
     const mainSectionSelect =
         getElement("metair-cslfm-section-select");
 
-    const typeSelect =
-        getElement("metair-modal-type-select");
+    const typeRadio =
+        document.querySelector(
+            'input[name="metair-modal-type"]:checked'
+        );
+
+    if(!typeRadio){
+        return;
+    }
 
     mainSectionSelect.value =
         sectionSelect.value;
 
     const mainTypeRadio =
         document.querySelector(
-            `input[name="metair-cslfm-type"][value="${typeSelect.value}"]`
+            `input[name="metair-cslfm-type"][value="${typeRadio.value}"]`
         );
 
     if(mainTypeRadio){
@@ -109,7 +116,7 @@ async function reloadMetairModalTimelineBySection(){
         sectionSelect.value;
 
     const isPotentialTemperature =
-        typeSelect.value === "2299";
+        typeRadio.value === "2299";
 
     const analysisCode =
         isPotentialTemperature
@@ -254,10 +261,25 @@ function enlargeImage(img){
         "none";
 
     getElement("metair-modal-control").style.display =
-    "none";
+        "none";
+
+    getElement("metair-modal-section-select").style.display =
+        "none";
 
     getElement("metair-modal-height-select").style.display =
-    "none";
+        "none";
+
+    document
+        .querySelectorAll(".metair-modal-type-option")
+        .forEach(option => {
+            option.style.display = "none";
+        });
+
+    document
+        .querySelectorAll(".metair-modal-echo-option")
+        .forEach(option => {
+            option.style.display = "none";
+        });
 
     els.modalImage.style.display =
         "block";
@@ -268,47 +290,45 @@ function enlargeImage(img){
     const timeline =
         getTimelineForImage(img);
 
+    appState.modal.type =
+        img.dataset.timeline || null;
+
     if(timeline){
-    openTimelineModal(img, timeline);
+        openTimelineModal(img, timeline);
 
-    if(img.dataset.timeline === "metair-cslfm"){
+        if(img.dataset.timeline === "metair-cslfm"){
+            getElement("metair-modal-control").style.display =
+                "block";
 
-    getElement("metair-modal-control").style.display =
-        "block";
+            getElement("metair-modal-section-select").style.display =
+                "inline-block";
 
-    getElement("metair-modal-section-select").style.display =
-        "inline-block";
+            document
+                .querySelectorAll(".metair-modal-type-option")
+                .forEach(option => {
+                    option.style.display = "inline-block";
+                });
 
-    getElement("metair-modal-type-select").style.display =
-        "inline-block";
+            document
+                .querySelectorAll(".metair-modal-echo-option")
+                .forEach(option => {
+                    option.style.display = "inline-block";
+                });
+        }
 
-    getElement("metair-modal-echo-select").style.display =
-        "inline-block";
-    }
-    
-    if(img.dataset.timeline === "metair-flat"){
+        if(img.dataset.timeline === "metair-flat"){
+            getElement("metair-modal-control").style.display =
+                "block";
 
-    getElement("metair-modal-control").style.display =
-        "block";
+            const heightSelect =
+                getElement("metair-modal-height-select");
 
-    getElement("metair-modal-section-select").style.display =
-        "none";
+            heightSelect.style.display =
+                "inline-block";
 
-    getElement("metair-modal-type-select").style.display =
-        "none";
-
-    getElement("metair-modal-echo-select").style.display =
-        "none";
-
-    const heightSelect =
-        getElement("metair-modal-height-select");
-
-    heightSelect.style.display =
-        "inline-block";
-
-    heightSelect.value =
-        getElement("metair-flat-height-select").value;
-    }
+            heightSelect.value =
+                getElement("metair-flat-height-select").value;
+        }
 
     }else{
         els.modalControl.style.display =
@@ -317,6 +337,7 @@ function enlargeImage(img){
 
     els.imageModal.classList.add("show");
 }
+
 
 function setModalSatelliteItem(index){
 
@@ -448,17 +469,20 @@ function initModalEvents(){
         reloadMetairModalTimelineBySection();
     });
 
-    getElement("metair-modal-type-select")
-    .addEventListener("change", () => {
-        reloadMetairModalTimelineBySection();
-    });
+    document
+        .querySelectorAll('input[name="metair-modal-type"]')
+        .forEach(radio => {
+            radio.addEventListener("change", () => {
+                reloadMetairModalTimelineBySection();
+            });
+        });
 
-    getElement("metair-modal-echo-select")
-    .addEventListener("change", () => {
-        setModalTimelineItem(
-            Number(els.modalSlider.value)
-        );
-    });
+    getElement("metair-modal-echo-checkbox")
+        .addEventListener("change", () => {
+            setModalTimelineItem(
+                Number(els.modalSlider.value)
+            );
+        });
 
     getElement("metair-modal-height-select")
     .addEventListener("change", () => {

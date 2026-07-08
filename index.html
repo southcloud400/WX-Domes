@@ -615,15 +615,29 @@ Loading...
                 <option value="59">東経122.5度</option>
             </select>
 
-            <select id="metair-modal-type-select">
-                <option value="2199">気温</option>
-                <option value="2299">温位</option>
-            </select>
+            <label class="metair-modal-type-option">
+                <input
+                    type="radio"
+                    name="metair-modal-type"
+                    value="2199"
+                    checked>
+                気温
+            </label>
 
-            <select id="metair-modal-echo-select">
-                <option value="off" selected>Echo OFF</option>
-                <option value="on">Echo ON</option>
-            </select>
+            <label class="metair-modal-type-option">
+                <input
+                    type="radio"
+                    name="metair-modal-type"
+                    value="2299">
+                温位
+            </label>
+
+            <label class="metair-modal-echo-option">
+                <input
+                    type="checkbox"
+                    id="metair-modal-echo-checkbox">
+                Echo
+            </label>
 
             <select id="metair-modal-height-select" style="display:none;">
                 <option value="145">FL450</option>
