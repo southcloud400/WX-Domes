@@ -359,6 +359,30 @@ function setModalSatelliteItem(index){
 
 function openSatelliteOverlayModal(){
 
+    getElement("metair-modal-control").style.display =
+    "none";
+
+    getElement("metair-modal-section-select").style.display =
+        "none";
+
+    getElement("metair-modal-height-select").style.display =
+        "none";
+
+    document
+        .querySelectorAll(".metair-modal-type-option")
+        .forEach(option => {
+            option.style.display = "none";
+        });
+
+    document
+        .querySelectorAll(".metair-modal-echo-option")
+        .forEach(option => {
+            option.style.display = "none";
+        });
+
+    getElement("metair-modal-echo-image").style.display =
+        "none";
+
     els.modalImage.style.display =
         "none";
 
