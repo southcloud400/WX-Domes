@@ -353,7 +353,7 @@ body.preflight-on .preflight-panel{
     height:100%;
     min-width:0;
     min-height:0;
-    object-fit:cover;
+    object-fit:fill;
     display:block;
     margin:0;
 }
@@ -494,12 +494,14 @@ body.preflight-on .preflight-panel{
     right:60px;
     z-index:10001;
     background:white;
+    color:black;
     padding:8px;
 }
 
 #metair-modal-control select{
     font-size:13px;
     padding:4px;
+    background:white;
 }
 
 .metair-modal-echo-image{
