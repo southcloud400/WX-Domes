@@ -513,7 +513,8 @@ body.preflight-on .preflight-panel{
     transform:translateY(-3.5%);
 }
 
-body.metair-mode .jma-maiji-panel{
+body.metair-mode .jma-maiji-panel,
+body.metair-mode .jma-satellite-panel{
     display:none;
 }
 

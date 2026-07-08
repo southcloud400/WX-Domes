@@ -19,6 +19,10 @@ function getTimelineForImage(img){
     return appState.metair.flatTimeline;
     }
 
+    if(img.dataset.timeline === "metair-cloud-top"){
+    return appState.metair.cloudTopTimeline;
+    }
+
     return null;
 }
 

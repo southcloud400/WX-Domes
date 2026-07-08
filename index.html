@@ -234,11 +234,17 @@ Loading...
 
     </div>
 
-    <div class="panel">
+    <div class="panel metair-maiji-panel">
         <div class="panel-control">
-            <label>Intentionally Blank</label>
+            <label>雲頂高度情報</label>
         </div>
-            <label>Intentionally Blank</label>
+
+        <img
+            id="metair-cloud-top-image"
+            src=""
+            class="weather-image"
+            data-timeline="metair-cloud-top">
+
     </div>
 
     <div class="panel metair-maiji-panel">
@@ -288,7 +294,7 @@ Loading...
             class="weather-image">
     </div>
 
-<div class="panel">
+<div class="panel jma-satellite-panel">
 
     <div class="panel-control">
 
@@ -349,12 +355,6 @@ Loading...
 
 </div>
     
-    <div class="panel">
-        <div class="panel-control">
-            <label>Intentionally Blank</label>
-        </div>
-            <label>Intentionally Blank</label>
-    </div>
 
     <div class="panel">
         <div class="panel-control">
@@ -410,22 +410,6 @@ Loading...
         src=""
         class="weather-image">
 </div>
-
-<div class="panel">
-    <div class="panel-control">
-        <label id="windy-title">
-            Windy
-        </label>
-    </div>
-
-    <iframe
-        class="windy-frame"
-        src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=°C&metricWind=kt&zoom=3&overlay=wind&product=ecmwf&level=200h&lat=37.721&lon=139.045&pressure=true"
-        width="100%"
-        height="450"
-        frameborder="0">
-    </iframe>
-</div>
     
     <div class="panel">
         <div class="panel-control">
@@ -434,6 +418,22 @@ Loading...
         <img
             src="https://www.data.jma.go.jp/airinfo/data/pict/fbjp/fbjp.png"
             class="weather-image">
+    </div>
+
+    <div class="panel">
+        <div class="panel-control">
+            <label id="windy-title">
+                Windy
+            </label>
+        </div>
+
+        <iframe
+            class="windy-frame"
+            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=°C&metricWind=kt&zoom=3&overlay=wind&product=ecmwf&level=200h&lat=37.721&lon=139.045&pressure=true"
+            width="100%"
+            height="450"
+            frameborder="0">
+        </iframe>
     </div>
 
 <div class="panel jma-maiji-panel">

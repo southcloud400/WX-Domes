@@ -45,7 +45,9 @@ const appState = {
     
     metair: {
         enabled: false,
-        cslfmTimeline: []
+        cslfmTimeline: [],
+        flatTimeline: [],
+        cloudTopTimeline: []
     },
 
 
@@ -234,13 +236,13 @@ async function loadWeatherMaps(){
         await fetchJson(JMA_URLS.weatherMapList);
 
     const asasFile =
-        getLatestItem(data.asia?.now, "basetime");
+        getLatestItem(data.asia_monochrome?.now, "basetime");
 
     const spasFile =
         getLatestItem(data.near_monochrome?.now, "basetime");
 
     const fsasFile =
-        getLatestItem(data.asia?.ft24, "basetime");
+        getLatestItem(data.asia_monochrome?.ft24, "basetime");
 
     if(!asasFile || !spasFile || !fsasFile){
         throw new Error("Weather map list does not include expected images");
@@ -551,6 +553,8 @@ function initMetairLoginEvents(){
         loadMetairAbjp();
 
         loadMetairWindProfilerTest();
+
+        loadMetairCloudTopTest();
 
     });
 
@@ -1303,6 +1307,87 @@ function initMetairCslfmTestEvents(){
         });
 
     loadMetairCslfmTest();
+}
+
+function buildMetairCloudTopUrl(timestamp){
+
+    return (
+        "https://www3.metair.go.jp/pict/satellite/hf/alt/" +
+        `ENJP64_RJTD_${timestamp}.jpg?` +
+        Date.now()
+    );
+}
+
+function createMetairCloudTopCandidates(){
+
+    const now =
+        new Date();
+
+    now.setUTCMinutes(
+        Math.floor(now.getUTCMinutes() / 5) * 5,
+        0,
+        0
+    );
+
+    return Array.from({ length: 7 }, (_, index) => {
+
+        const time =
+            new Date(
+                now.getTime() -
+                index * 30 * 60 * 1000
+            );
+
+        const timestamp =
+            formatTimestamp(time).slice(0, 12) + "00";
+
+        return {
+            timestamp,
+            url: buildMetairCloudTopUrl(timestamp)
+        };
+    });
+}
+
+async function loadMetairCloudTopTest(){
+
+    if(!appState.metair.enabled){
+        return;
+    }
+
+    const image =
+        document.getElementById("metair-cloud-top-image");
+
+    if(!image){
+        return;
+    }
+
+    image.alt =
+        "Cloud Top 取得中...";
+
+    const timeline =
+        await filterExistingImages(
+            createMetairCloudTopCandidates()
+        );
+
+    appState.metair.cloudTopTimeline =
+        timeline.reverse();
+
+    if(appState.metair.cloudTopTimeline.length === 0){
+        image.removeAttribute("src");
+        image.alt =
+            "Cloud Top が見つかりません";
+        return;
+    }
+
+    const latest =
+        appState.metair.cloudTopTimeline[
+            appState.metair.cloudTopTimeline.length - 1
+        ];
+
+    image.src =
+        latest.url;
+
+    image.alt =
+        `Cloud Top ${formatUtcTimestamp(latest.timestamp)}`;
 }
 
 function initMetairWindProfilerTestEvents(){
