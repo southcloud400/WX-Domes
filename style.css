@@ -413,8 +413,8 @@ body.preflight-on .preflight-panel{
     inset:0;
 
     display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    grid-template-rows:repeat(3, minmax(0, 1fr));
+    grid-template-columns:repeat(4, 25%);
+    grid-template-rows:repeat(3, 33.3333%);
 
     pointer-events:none;
 
@@ -438,8 +438,8 @@ body.preflight-on .preflight-panel{
     inset:0;
 
     display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    grid-template-rows:repeat(3, minmax(0, 1fr));
+    grid-template-columns:repeat(4, 25%);
+    grid-template-rows:repeat(3, 33.3333%);
 
     pointer-events:none;
 
@@ -684,41 +684,17 @@ body.degrade-mode .metair-maiji-panel{
 }
 
 @media (pointer:coarse){
-    #maiji-modal-control{
-        width:94%;
-        margin-top:12px;
-    }
-
-    #maiji-modal-slider{
-        height:22px;
-        border-radius:11px;
-    }
-
-    #maiji-modal-slider::-webkit-slider-thumb{
-        width:34px;
-        height:44px;
-        border-radius:6px;
-    }
-
-    #maiji-modal-time{
-        font-size:18px;
-        margin-bottom:10px;
-    }
-}
-
-@media (pointer:coarse){
 
     #metair-modal-control{
-        top:60px;
+        top:70px;
         right:24px;
 
-        display:flex;
+        display:flex !important;
         flex-direction:column;
         align-items:flex-start;
         gap:8px;
 
         padding:10px 12px;
-
         font-size:16px;
     }
 
@@ -739,4 +715,7 @@ body.degrade-mode .metair-maiji-panel{
         margin-right:8px;
     }
 
+    .metair-modal-echo-image{
+        transform:translateY(-4.8%);
+    }
 }
