@@ -15,7 +15,7 @@ function parseAirportIds(value){
         ids.filter(id => !/^[A-Z]{4}$/.test(id));
 
     if(ids.length === 0){
-        throw new Error("空港コードを入力してください");
+        throw new Error("Please enter the 4-letter airport code.");
     }
 
     if(invalidIds.length > 0){

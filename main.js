@@ -383,6 +383,10 @@ async function loadSatelliteTime(){
         tile.src =
             `${JMA_URLS.satelliteMapTileBase}/5/${x}/${y}.png`;
     });
+
+    const testTile =
+    document.querySelector(".satellite-overlay-cloud-tile");
+
 }
 
 function initSatelliteOverlayEvents(){
@@ -1429,6 +1433,9 @@ function initAppEvents(){
 async function initializeApp(){
 
     initAppEvents();
+
+    const tile =
+        document.querySelector(".satellite-overlay-cloud-tile");
 
     await Promise.allSettled([
         runStartupTask("Lightning", loadLightningImage),
