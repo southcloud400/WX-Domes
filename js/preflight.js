@@ -224,3 +224,54 @@ async function showDummyAiSummary(){
             "AI Summary の取得に失敗しました";
     }
 }
+
+async function loadFxfe502PdfTest(){
+
+    const canvas =
+        document.getElementById("fxfe502-pdf-canvas");
+
+    if(!canvas){
+        return;
+    }
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const url =
+        "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_12.pdf";
+
+    try{
+        const pdf =
+            await pdfjsLib.getDocument(url).promise;
+
+        const page =
+            await pdf.getPage(1);
+
+        const viewport =
+            page.getViewport({
+                scale: 1.5
+            });
+
+        const context =
+            canvas.getContext("2d");
+
+        canvas.width =
+            viewport.width;
+
+        canvas.height =
+            viewport.height;
+
+        await page.render({
+            canvasContext: context,
+            viewport
+        }).promise;
+
+    }catch(error){
+        console.error(
+            "FXFE502 PDF表示失敗",
+            error
+        );
+    }
+}
+
+loadFxfe502PdfTest();
