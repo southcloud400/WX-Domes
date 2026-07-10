@@ -288,8 +288,13 @@ function enlargeImage(img){
     els.modalImage.style.display =
         "block";
 
-    els.modalImage.src =
-        img.src;
+    if(img instanceof HTMLCanvasElement){
+        els.modalImage.src =
+            img.toDataURL("image/png");
+    }else{
+        els.modalImage.src =
+            img.src;
+    }
 
     const timeline =
         getTimelineForImage(img);

@@ -56,37 +56,6 @@ function loadRouteForecastSection(){
     );
 }
 
-async function loadFXFEChart(code, imageId){
-    const now =
-        new Date();
-
-    const candidates =
-        Array.from({ length: 72 }, (_, index) => {
-            const time =
-                new Date(now.getTime() - index * 60 * 60 * 1000);
-
-            time.setUTCMinutes(0, 0, 0);
-
-            const timestamp =
-                formatTimestamp(time).slice(0, 10) + "00";
-
-            return {
-                url:
-                    `https://n-kishou.com/ee/image4/lfax/${code}_${timestamp}.png?x=47&y=0`
-            };
-        });
-
-    const existing =
-        await filterExistingImages(candidates);
-
-    if(existing.length === 0){
-        console.warn(`${code} が見つかりませんでした`);
-        return;
-    }
-
-    getElement(imageId).src =
-        existing[0].url;
-}
 
 function loadLowLevelSigwx(){
     const select =
