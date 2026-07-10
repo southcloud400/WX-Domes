@@ -127,13 +127,6 @@ Overview
 
 Airport Remark
 
-Enroute Weather
-
-■ JAPAN NORTH
-■ JAPAN EAST
-■ JAPAN WEST
-■ JAPAN SOUTH
-
 ※AI要約は補助情報です。
 最終判断は公式資料・各社の規程に従ってください。`;
 

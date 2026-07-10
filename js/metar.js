@@ -1,5 +1,5 @@
 const METAR_API_URL =
-    "https://aviationweather.gov/api/data/metar";
+    "https://wx-domes-ai-summary.just-966.workers.dev/awc";
 
 let metarRequestId = 0;
 
@@ -125,34 +125,51 @@ async function loadMetarText(){
         els.metarText.innerText =
             "METAR/TAF を取得中...";
 
-        const params =
-            new URLSearchParams({
-                ids: airportIds.join(","),
-                format: "raw",
-                taf: "true",
-                hours: "3"
-            });
+                const params =
+                    new URLSearchParams({
+                        ids: airportIds.join(",")
+                    });
 
-        const response =
-            await fetch(`${METAR_API_URL}?${params.toString()}`);
-        
-        if(requestId !== metarRequestId){
-            return;
-        }
+                const response =
+                    await fetch(
+                        `${METAR_API_URL}?${params.toString()}`
+                    );
 
-        if(!response.ok){
-            throw new Error(`HTTP ${response.status}`);
-        }
+                if(requestId !== metarRequestId){
+                    return;
+                }
 
-        const text =
-            await response.text();
+                if(!response.ok){
+                    throw new Error(`HTTP ${response.status}`);
+                }
 
-        if(requestId !== metarRequestId){
-            return;
-        }
+                const data =
+                    await response.json();
 
-        els.metarText.innerText =
-            formatMetarTafText(text, airportIds);
+                if(requestId !== metarRequestId){
+                    return;
+                }
+
+                if(!data.ok){
+                    throw new Error(
+                        data.error ||
+                        "METAR/TAF の取得に失敗しました"
+                    );
+                }
+
+                const text =
+                    [
+                        data.metar || "",
+                        data.taf || ""
+                    ]
+                        .filter(value => value.trim() !== "")
+                        .join("\n");
+
+                els.metarText.innerText =
+                    formatMetarTafText(
+                        text,
+                        airportIds
+                    );
 
     }catch(error){
 
