@@ -32,7 +32,7 @@ function createMetarTafGroups(lines){
 
     lines.forEach(line => {
         const match =
-            line.match(/^(?:(METAR|TAF)\s+)?([A-Z]{4})\s+/);
+            line.match(/^(?:(METAR|TAF)\s+)?(?:(AMD|COR)\s+)?([A-Z]{4})\s+/);
 
         if(!match){
             return;
@@ -44,7 +44,7 @@ function createMetarTafGroups(lines){
                 : "METAR";
 
         const airport =
-            match[2];
+            match[3];
 
         if(!groups[airport]){
             groups[airport] = {
