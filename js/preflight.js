@@ -113,8 +113,6 @@ function loadPreflightImages(){
     loadRouteForecastSection();
     loadLowLevelSigwx();
     
-    loadFXFEChart("fxfe502", "fxfe502-image");
-    loadFXFEChart("fxfe504", "fxfe504-image");
     loadFXFEChart("fxfe5782", "fxfe5782-image");
     loadFXFEChart("fxfe5784", "fxfe5784-image");
     loadFXFEChart("fxjp854", "fxjp854-image");
@@ -225,10 +223,66 @@ async function showDummyAiSummary(){
     }
 }
 
-async function loadFxfe502PdfTest(){
+async function getPdfLastModified(url){
+
+    const response =
+        await fetch(url, {
+            method: "HEAD"
+        });
+
+    if(!response.ok){
+        throw new Error(
+            `PDF HEAD取得失敗 HTTP ${response.status}: ${url}`
+        );
+    }
+
+    const lastModified =
+        response.headers.get("last-modified");
+
+    if(!lastModified){
+        throw new Error(
+            `Last-Modifiedが取得できません: ${url}`
+        );
+    }
+
+    return new Date(lastModified).getTime();
+}
+
+async function findLatestJmaPdfUrl(chartCode){
+
+    const baseUrl =
+        "https://www.jma.go.jp/bosai/numericmap/data/nwpmap";
+
+    const candidates = [
+        `${baseUrl}/${chartCode}_00.pdf`,
+        `${baseUrl}/${chartCode}_12.pdf`
+    ];
+
+    const results =
+        await Promise.all(
+            candidates.map(async url => {
+                return {
+                    url,
+                    lastModified:
+                        await getPdfLastModified(url)
+                };
+            })
+        );
+
+    results.sort((a, b) =>
+        b.lastModified - a.lastModified
+    );
+
+    return results[0].url;
+}
+
+async function loadJmaPdfToCanvas(
+    chartCode,
+    canvasId
+){
 
     const canvas =
-        document.getElementById("fxfe502-pdf-canvas");
+        document.getElementById(canvasId);
 
     if(!canvas){
         return;
@@ -237,12 +291,19 @@ async function loadFxfe502PdfTest(){
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-    const url =
-        "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_12.pdf";
-
     try{
+        const latestUrl =
+            await findLatestJmaPdfUrl(chartCode);
+
+        console.log(
+            `${chartCode.toUpperCase()} latest PDF:`,
+            latestUrl
+        );
+
         const pdf =
-            await pdfjsLib.getDocument(url).promise;
+            await pdfjsLib.getDocument(
+                latestUrl
+            ).promise;
 
         const page =
             await pdf.getPage(1);
@@ -268,10 +329,18 @@ async function loadFxfe502PdfTest(){
 
     }catch(error){
         console.error(
-            "FXFE502 PDF表示失敗",
+            `${chartCode.toUpperCase()} PDF表示失敗`,
             error
         );
     }
 }
 
-loadFxfe502PdfTest();
+loadJmaPdfToCanvas(
+    "fxfe502",
+    "fxfe502-pdf-canvas"
+);
+
+loadJmaPdfToCanvas(
+    "fxfe504",
+    "fxfe504-pdf-canvas"
+);
