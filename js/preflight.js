@@ -112,10 +112,6 @@ function loadPreflightImages(){
     loadAviationEnrouteCommentary();
     loadRouteForecastSection();
     loadLowLevelSigwx();
-    
-    loadFXFEChart("fxfe5782", "fxfe5782-image");
-    loadFXFEChart("fxfe5784", "fxfe5784-image");
-    loadFXFEChart("fxjp854", "fxjp854-image");
 }
 
 function setPreflightMode(enabled){
@@ -343,4 +339,19 @@ loadJmaPdfToCanvas(
 loadJmaPdfToCanvas(
     "fxfe504",
     "fxfe504-pdf-canvas"
+);
+
+loadJmaPdfToCanvas(
+    "fxfe5782",
+    "fxfe5782-pdf-canvas"
+);
+
+loadJmaPdfToCanvas(
+    "fxfe5784",
+    "fxfe5784-pdf-canvas"
+);
+
+loadJmaPdfToCanvas(
+    "fxjp854",
+    "fxjp854-pdf-canvas"
 );
