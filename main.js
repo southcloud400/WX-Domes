@@ -587,7 +587,7 @@ function createMetairAbjpCandidates(){
         new Date();
 
     const jst =
-        new Date(now.getTime() + 9 * 60 * 60 * 1000);
+        new Date(now.getTime() + 12 * 60 * 60 * 1000);
 
     jst.setMinutes(0, 0, 0);
 

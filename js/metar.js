@@ -28,32 +28,61 @@ function parseAirportIds(value){
 }
 
 function createMetarTafGroups(lines){
+
     const groups = {};
 
-    lines.forEach(line => {
-        const match =
-            line.match(/^(?:(METAR|TAF)\s+)?(?:(AMD|COR)\s+)?([A-Z]{4})\s+/);
+    let currentAirport = "";
+    let currentType = "";
 
-        if(!match){
+    lines.forEach(line => {
+
+        const match =
+            line.match(
+                /^(?:(METAR|TAF)\s+)?(?:(AMD|COR)\s+)?([A-Z]{4})\s+/
+            );
+
+        if(match){
+
+            const type =
+                line.includes(" TAF ") ||
+                line.startsWith("TAF")
+                    ? "taf"
+                    : "metar";
+
+            const airport =
+                match[3];
+
+            if(!groups[airport]){
+                groups[airport] = {
+                    metar: [],
+                    taf: []
+                };
+            }
+
+            groups[airport][type].push(line);
+
+            currentAirport = airport;
+            currentType = type;
+
             return;
         }
 
-        const type =
-            line.includes(" TAF ") || line.startsWith("TAF")
-                ? "TAF"
-                : "METAR";
+        if(
+            currentAirport &&
+            currentType &&
+            groups[currentAirport]
+        ){
+            const reports =
+                groups[currentAirport][currentType];
 
-        const airport =
-            match[3];
+            if(reports.length > 0){
+                const lastIndex =
+                    reports.length - 1;
 
-        if(!groups[airport]){
-            groups[airport] = {
-                metar: [],
-                taf: []
-            };
+                reports[lastIndex] +=
+                    "\n" + line;
+            }
         }
-
-        groups[airport][type.toLowerCase()].push(line);
     });
 
     return groups;
