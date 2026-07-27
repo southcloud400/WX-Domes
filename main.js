@@ -586,10 +586,11 @@ function createMetairAbjpCandidates(){
     const now =
         new Date();
 
+    // 現在時刻をJSTの「見かけ上のUTC時刻」に変換
     const jst =
-        new Date(now.getTime() + 12 * 60 * 60 * 1000);
+        new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
-    jst.setMinutes(0, 0, 0);
+    jst.setUTCMinutes(0, 0, 0);
 
     const validHoursJst =
         [6, 9, 12, 15, 18, 21];
@@ -603,18 +604,28 @@ function createMetairAbjpCandidates(){
             const candidateJst =
                 new Date(jst);
 
-            candidateJst.setDate(jst.getDate() - dayBack);
-            candidateJst.setHours(hour);
+            candidateJst.setUTCDate(
+                jst.getUTCDate() - dayBack
+            );
+
+            candidateJst.setUTCHours(hour);
 
             if(candidateJst > jst){
                 return;
             }
 
-            const candidateUtc =
-                new Date(candidateJst.getTime() - 9 * 60 * 60 * 1000);
+            // JST発表時刻から12時間引く
+            // 9時間：JST → UTC
+            // 3時間：発表時刻 → ファイル名時刻
+            const fileTimeUtc =
+                new Date(
+                    candidateJst.getTime() -
+                    12 * 60 * 60 * 1000
+                );
 
             const timestamp =
-                formatTimestamp(candidateUtc).slice(0, 12) + "00";
+                formatTimestamp(fileTimeUtc)
+                    .slice(0, 12) + "00";
 
             candidates.push({
                 timestamp,
@@ -624,7 +635,9 @@ function createMetairAbjpCandidates(){
     }
 
     return candidates.sort((a, b) =>
-        String(b.timestamp).localeCompare(String(a.timestamp))
+        String(b.timestamp).localeCompare(
+            String(a.timestamp)
+        )
     );
 }
 
