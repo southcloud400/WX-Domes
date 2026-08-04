@@ -118,12 +118,17 @@ function formatMetarTafText(text, airportIds = []){
 
             const metarText =
                 group.metar.length > 0
-                    ? group.metar.slice(0, 3).join("\n")
+                    ? group.metar
+                        .slice(0, 3)
+                        .map(formatMetarReport)
+                        .join("\n")
                     : "";
 
             const tafText =
                 group.taf.length > 0
-                    ? group.taf.join("\n")
+                    ? escapeHtml(
+                        group.taf.join("\n")
+                    )
                     : "";
 
             return (
@@ -137,6 +142,171 @@ function formatMetarTafText(text, airportIds = []){
         });
 
     return output.join("\n\n--------------------\n\n");
+}
+
+function escapeHtml(text){
+    return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+
+function getMetarVisibility(metar){
+
+    const match =
+        metar.match(
+            /(?:^|\s)(\d{4})(?=\s|$)/
+        );
+
+    if(!match){
+        return null;
+    }
+
+    return Number(match[1]);
+}
+
+function normalizeRvrValue(prefix, value){
+
+    const number =
+        Number(value);
+
+    if(prefix === "M"){
+        return number - 1;
+    }
+
+    if(prefix === "P"){
+        return Infinity;
+    }
+
+    return number;
+}
+
+function getLowestMetarRvr(metar){
+
+    const matches =
+        metar.matchAll(
+            /\bR\d{2}[LCR]?\/([MP]?)(\d{4})(?:V([MP]?)(\d{4}))?[UDN]?\b/g
+        );
+
+    const values = [];
+
+    for(const match of matches){
+
+        values.push(
+            normalizeRvrValue(
+                match[1],
+                match[2]
+            )
+        );
+
+        if(match[4]){
+            values.push(
+                normalizeRvrValue(
+                    match[3],
+                    match[4]
+                )
+            );
+        }
+    }
+
+    if(values.length === 0){
+        return null;
+    }
+
+    return Math.min(...values);
+}
+
+function getLowestMetarCeiling(metar){
+
+    const matches =
+        metar.matchAll(
+            /\b(?:BKN|OVC|VV)(\d{3})\b/g
+        );
+
+    const ceilings = [];
+
+    for(const match of matches){
+        ceilings.push(
+            Number(match[1]) * 100
+        );
+    }
+
+    if(ceilings.length === 0){
+        return null;
+    }
+
+    return Math.min(...ceilings);
+}
+
+function isBelow(value, threshold){
+
+    return (
+        value !== null &&
+        value < threshold
+    );
+}
+
+function getMetarSeverity(metar){
+
+    const visibility =
+        getMetarVisibility(metar);
+
+    const rvr =
+        getLowestMetarRvr(metar);
+
+    const ceiling =
+        getLowestMetarCeiling(metar);
+
+    if(
+        isBelow(visibility, 300) ||
+        isBelow(rvr, 300) ||
+        isBelow(ceiling, 100)
+    ){
+        return "red";
+    }
+
+    if(
+        isBelow(visibility, 550) ||
+        isBelow(rvr, 550) ||
+        isBelow(ceiling, 200)
+    ){
+        return "purple";
+    }
+
+    if(
+        isBelow(visibility, 3200) ||
+        isBelow(ceiling, 600)
+    ){
+        return "orange";
+    }
+
+    if(
+        isBelow(visibility, 5000) ||
+        isBelow(ceiling, 1000)
+    ){
+        return "yellow";
+    }
+
+    return "normal";
+}
+
+function formatMetarReport(metar){
+
+    const escapedMetar =
+        escapeHtml(metar);
+
+    const severity =
+        getMetarSeverity(metar);
+
+    if(severity === "normal"){
+        return escapedMetar;
+    }
+
+    return (
+        `<span class="metar-severity-${severity}">` +
+        escapedMetar +
+        `</span>`
+    );
 }
 
 async function loadMetarText(){
@@ -194,7 +364,7 @@ async function loadMetarText(){
                         .filter(value => value.trim() !== "")
                         .join("\n");
 
-                els.metarText.innerText =
+                els.metarText.innerHTML =
                     formatMetarTafText(
                         text,
                         airportIds
@@ -217,3 +387,4 @@ function initMetarEvents(){
         loadMetarText();
     });
 }
+

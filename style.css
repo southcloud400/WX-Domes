@@ -129,8 +129,8 @@ body.preflight-on .preflight-panel{
 }
 
 .metar-panel{
-    background:var(--color-surface-dark);
-    border:1px solid var(--color-border);
+    background:white;
+    border:1px solid var(--color-panel-border);
     padding:12px;
     margin-bottom:12px;
 }
@@ -138,7 +138,23 @@ body.preflight-on .preflight-panel{
 #metar-text{
     white-space:pre-wrap;
     font-size:14px;
-    color:white;
+    color:black;
+}
+
+.metar-severity-yellow{
+    color:#b8860b;
+}
+
+.metar-severity-orange{
+    color:#d66a00;
+}
+
+.metar-severity-purple{
+    color:#7b2cbf;
+}
+
+.metar-severity-red{
+    color:#c62828;
 }
 
 .airport-input{
