@@ -124,12 +124,14 @@ function formatMetarTafText(text, airportIds = []){
                         .join("\n")
                     : "";
 
-            const tafText =
+           const tafText =
                 group.taf.length > 0
                     ? escapeHtml(
                         group.taf.join("\n")
                     )
-                    : "";
+                    : createJmaAirportForecastLinks(
+                        airport
+                    );
 
             return (
                 `【${airport}】\n` +
@@ -149,6 +151,26 @@ function escapeHtml(text){
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
+}
+
+function createJmaAirportForecastLinks(airport){
+
+    const baseUrl =
+        "https://www.data.jma.go.jp/airinfo/data/pict/taf";
+
+    const part1Url =
+        `${baseUrl}/QMCD98_${airport}.png`;
+
+    const part2Url =
+        `${baseUrl}/QMCJ98_${airport}.png`;
+
+    return (
+        `TAF is not available. Please refer to\n` +
+        `<a href="${part1Url}" target="_blank" rel="noopener noreferrer">` +
+        `飛行場時系列予報 Part 1</a>\n` +
+        `<a href="${part2Url}" target="_blank" rel="noopener noreferrer">` +
+        `飛行場時系列予報 Part 2</a>`
+    );
 }
 
 function getMetarVisibility(metar){
