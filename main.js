@@ -1457,7 +1457,7 @@ async function initializeApp(){
         runStartupTask("Satellite", loadSatelliteTime),
         runStartupTask("Radar", loadRadarTime),
         runStartupTask("Maiji cross section",loadMaijiPlane),
-        runStartupTask("METAR", loadMetarText)
+        runStartupTask("Airport weather", loadAirportWeather)
     ]);
 
 }

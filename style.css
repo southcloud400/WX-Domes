@@ -157,6 +157,18 @@ body.preflight-on .preflight-panel{
     color:#c62828;
 }
 
+.checkbox-label{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    margin-left:10px;
+}
+
+.airport-input .checkbox-label input{
+    width:auto;
+    margin:0;
+}
+
 .airport-input{
     margin-bottom:20px;
     color:white;

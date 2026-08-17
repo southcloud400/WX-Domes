@@ -1,6 +1,34 @@
 const METAR_API_URL =
     "https://wx-domes-ai-summary.just-966.workers.dev/awc";
 
+const ATIS_API_URL =
+    "https://wx-domes-ai-summary.just-966.workers.dev/atis";
+
+    const ATIS_SUPPORTED_AIRPORTS = new Set([
+    "RJTT",
+    "RJAA",
+    "RJCC",
+    "RJCH",
+    "RJSS",
+    "RJSN",
+    "RJGG",
+    "RJOO",
+    "RJOA",
+    "RJBE",
+    "RJBB",
+    "RJOM",
+    "RJOK",
+    "RJAA",
+    "RJFF",
+    "RJFS",
+    "RJFU",
+    "RJFO",
+    "RJFT",
+    "RJFM",
+    "RJFK",
+    "ROAH"
+]);
+
 let metarRequestId = 0;
 
 function parseAirportIds(value){
@@ -88,17 +116,17 @@ function createMetarTafGroups(lines){
     return groups;
 }
 
-function formatMetarTafText(text, airportIds = []){
+function formatMetarTafText(
+    text,
+    airportIds = [],
+    atisByAirport = null
+){
 
     const lines =
         text
             .split("\n")
             .map(line => line.trim())
             .filter(line => line !== "");
-
-    if(lines.length === 0){
-        return "METAR/TAF は見つかりませんでした";
-    }
 
     const groups =
         createMetarTafGroups(lines);
@@ -108,23 +136,35 @@ function formatMetarTafText(text, airportIds = []){
             ? airportIds
             : Object.keys(groups);
 
+    const useAtis =
+        atisByAirport !== null;
+
     const output =
         airports.map(airport => {
+
             const group =
                 groups[airport] || {
                     metar: [],
                     taf: []
                 };
 
-            const metarText =
-                group.metar.length > 0
-                    ? group.metar
-                        .slice(0, 3)
-                        .map(formatMetarReport)
-                        .join("\n")
-                    : "";
 
-           const tafText =
+            const primaryText =
+                useAtis
+                    ? escapeHtml(
+                        atisByAirport[airport] ||
+                        "ATIS is not available."
+                    )
+                    : (
+                        group.metar.length > 0
+                            ? group.metar
+                                .slice(0, 3)
+                                .map(formatMetarReport)
+                                .join("\n")
+                            : ""
+                    );
+
+            const tafText =
                 group.taf.length > 0
                     ? escapeHtml(
                         group.taf.join("\n")
@@ -135,15 +175,20 @@ function formatMetarTafText(text, airportIds = []){
 
             return (
                 `【${airport}】\n` +
-                "-METAR-\n" +
-                metarText +
+                (
+                    useAtis
+                        ? primaryText
+                        : "-METAR-\n" + primaryText
+                ) +
                 "\n\n" +
                 "-TAF-\n" +
                 tafText
             );
         });
 
-    return output.join("\n\n--------------------\n\n");
+    return output.join(
+        "\n\n--------------------\n\n"
+    );
 }
 
 function escapeHtml(text){
@@ -331,7 +376,7 @@ function formatMetarReport(metar){
     );
 }
 
-async function loadMetarText(){
+async function loadAirportWeather(){
 
     const requestId =
         ++metarRequestId;
@@ -351,25 +396,47 @@ async function loadMetarText(){
                         ids: airportIds.join(",")
                     });
 
-                const response =
-                    await fetch(
+                const useAtis =
+                    document.getElementById(
+                        "atis-toggle"
+                    ).checked;
+
+                const awcPromise =
+                    fetch(
                         `${METAR_API_URL}?${params.toString()}`
                     );
+
+                const atisAirportIds =
+                    airportIds.filter(id =>
+                        ATIS_SUPPORTED_AIRPORTS.has(id)
+                    );
+
+                const atisPromise =
+                    useAtis && atisAirportIds.length > 0
+                        ? fetch(
+                            `${ATIS_API_URL}?` +
+                            new URLSearchParams({
+                                location:
+                                    atisAirportIds.join(",")
+                            }).toString()
+                        )
+                        : null;
+
+                const response =
+                    await awcPromise;
 
                 if(requestId !== metarRequestId){
                     return;
                 }
 
                 if(!response.ok){
-                    throw new Error(`HTTP ${response.status}`);
+                    throw new Error(
+                        `HTTP ${response.status}`
+                    );
                 }
 
                 const data =
                     await response.json();
-
-                if(requestId !== metarRequestId){
-                    return;
-                }
 
                 if(!data.ok){
                     throw new Error(
@@ -383,13 +450,54 @@ async function loadMetarText(){
                         data.metar || "",
                         data.taf || ""
                     ]
-                        .filter(value => value.trim() !== "")
+                        .filter(value =>
+                            value.trim() !== ""
+                        )
                         .join("\n");
+
+                let atisByAirport =
+                    null;
+
+                if(useAtis){
+
+                    atisByAirport = {};
+
+                    if(atisPromise){
+
+                        const atisResponse =
+                            await atisPromise;
+
+                        if(!atisResponse.ok){
+                            throw new Error(
+                                `ATIS HTTP ${atisResponse.status}`
+                            );
+                        }
+
+                        const atisData =
+                            await atisResponse.json();
+
+                        if(!atisData.ok){
+                            throw new Error(
+                                "ATISの取得に失敗しました"
+                            );
+                        }
+
+                        atisData.atis.forEach(item => {
+                            atisByAirport[item.location] =
+                                item.atis || "";
+                        });
+                    }
+                }
+
+                if(requestId !== metarRequestId){
+                    return;
+                }
 
                 els.metarText.innerHTML =
                     formatMetarTafText(
                         text,
-                        airportIds
+                        airportIds,
+                        atisByAirport
                     );
 
     }catch(error){
@@ -406,7 +514,10 @@ async function loadMetarText(){
 
 function initMetarEvents(){
     els.metarUpdateButton.addEventListener("click", () => {
-        loadMetarText();
+        loadAirportWeather();
     });
 }
+
+
+
 
